@@ -1,0 +1,2 @@
+source;share/fetch_7dof_description/environment/ament_prefix_path.sh
+source;share/fetch_7dof_description/environment/path.sh
