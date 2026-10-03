@@ -1,0 +1,23 @@
+1. Launch file (launch/fetch_7dof_gazebo.launch.py):
+- gz_spawn_entity → ros_gz_sim (package doesn't exist in Jazzy)
+- ros_gz → ros_gz_sim (correct package name)
+- Added ParameterValue wrapper for robot_description parameter
+- Uses OpaqueFunction to construct gz_args string properly
+- Added ros_gz_bridge for /clock and /joint_states
+2. URDF (urdf/fetch_7dof.urdf):
+- Replaced missing STL meshes with primitive geometries (boxes, cylinders)
+- Fixed sphere syntax (<sphere radius="..."/>) 
+- Fixed invalid inertia (zeros) on gripper fingers
+- Added gz-sim8-joint-state-publisher-system.so plugin
+- Kept <ros2_control> config for future controller integration
+3. World file (worlds/fetch_table.world):
+- Replaced model://sun and model://ground_plane includes with inline definitions (not available in minimal container)
+4. package.xml: Updated dependencies to match installed packages
+Verified working:
+docker run --rm -v /path/to/project:/root/project jazzy-ros2ctrl:latest \
+  bash -c "source /opt/ros/jazzy/setup.bash && source /root/project/install/setup.bash && \
+  ros2 launch fetch_7dof_description fetch_7dof_gazebo.launch.py gui:=false"
+- Gazebo starts, loads the pick-and-place world
+- Robot spawns at (0.405, 0.48, 0)  
+- /joint_states publishes all 9 joints (7 arm + 2 gripper) after ~15s
+- /clock topic available
