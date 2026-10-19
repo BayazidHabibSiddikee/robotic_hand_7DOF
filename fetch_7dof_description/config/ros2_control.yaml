@@ -10,6 +10,8 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
     gripper_joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
+    hand_joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
 
 arm_joint_trajectory_controller:
   ros__parameters:
@@ -32,6 +34,25 @@ gripper_joint_trajectory_controller:
     joints:
       - r_gripper_finger_joint
       - l_gripper_finger_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+
+# 7-DOF FreeCAD hand (Option B). H1..H5 = wrist/palm revolute joints.
+# H6/H7 (finger_L/R_prismatic) are Fetch-compatible (0..0.05 m) and are
+# aliased here alongside the stock gripper controller for hand-only demos.
+hand_joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - hand_yaw_joint
+      - hand_pitch_joint
+      - hand_roll_joint
+      - knuckle_spread_L_joint
+      - knuckle_spread_R_joint
+      - finger_L_prismatic_joint
+      - finger_R_prismatic_joint
     command_interfaces:
       - position
     state_interfaces:

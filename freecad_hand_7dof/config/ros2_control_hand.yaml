@@ -1,0 +1,18 @@
+# 7-DOF hand ros2_control block for the combined arm+hand URDF
+# (fetch_7dof_with_hand.urdf). Merge into your controller_manager spawner:
+#   ros2 run controller_manager spawner hand_joint_trajectory_controller
+hand_joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - hand_yaw_joint            # H1 revolute Z +-90 deg
+      - hand_pitch_joint          # H2 revolute Y +-60 deg
+      - hand_roll_joint           # H3 revolute X +-35 deg
+      - knuckle_spread_L_joint    # H4 revolute Z 0..30 deg
+      - knuckle_spread_R_joint    # H5 revolute Z 0..30 deg
+      - finger_L_prismatic_joint  # H6 prismatic 0..0.05 m (Fetch-compatible)
+      - finger_R_prismatic_joint  # H7 prismatic 0..0.05 m (Fetch-compatible)
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
