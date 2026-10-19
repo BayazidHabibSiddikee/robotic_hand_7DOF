@@ -8,7 +8,8 @@ import xml.etree.ElementTree as ET
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ARM = "/home/bayazid/Documents/robotic_hand_7DOF/fetch_7dof_description/urdf/fetch_7dof.urdf"
+REPO = os.path.dirname(HERE)
+ARM = os.path.join(REPO, "fetch_7dof_description", "urdf", "fetch_7dof.urdf")
 HAND = os.path.join(HERE, "urdf/hand_7dof.urdf")
 OUT = os.path.join(HERE, "urdf/fetch_7dof_with_hand.urdf")
 
