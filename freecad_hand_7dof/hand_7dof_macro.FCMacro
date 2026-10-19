@@ -1,0 +1,78 @@
+"""FreeCAD macro: builds the 7-DOF hand parametrically (Part workbench).
+Option B: Fetch 2-finger gripper + 5 wrist/palm DOF = 7 total.
+
+DOF map:
+  H1 hand_yaw_joint      revolute  Z  +-90 deg
+  H2 hand_pitch_joint    revolute  Y  +-60 deg
+  H3 hand_roll_joint     revolute  X  +-35 deg
+  H4 knuckle_spread_L    revolute  Z  0..30 deg (left finger yaw)
+  H5 knuckle_spread_R    revolute  Z  0..30 deg (right finger yaw)
+  H6 finger_L_prismatic  prismatic Y  0..50 mm (reuse Fetch finger)
+  H7 finger_R_prismatic  prismatic Y  0..50 mm (reuse Fetch finger)
+
+USE IN FREECAD GUI:
+  1. sudo snap install freecad   (or conda: micromamba create -n cad -c conda-forge freecad)
+  2. FreeCAD -> Macro -> Macros... -> Create "hand_7dof_macro" -> paste this file -> Execute
+  3. Parts appear as parametric features; edit the PARAMS block to resize.
+  4. File -> Export each body to STL into freecad_hand_7dof/meshes/ to refresh the URDF.
+
+This script is idempotent: re-running rebuilds the 'Hand7DOF' group.
+"""
+import FreeCAD as App
+import Part
+
+PARAMS = dict(
+    adapter_r=25.0, adapter_len=30.0, flange_xy=70.0, flange_t=20.0,
+    yaw_box=(50.0, 75.0, 45.0), pitch_box=(45.0, 65.0, 40.0),
+    palm=(120.0, 100.0, 18.0), knuckle=(35.0, 22.0, 30.0),
+    finger=(30.0, 20.0, 80.0),  # reuse Fetch finger dims (mm)
+)
+
+doc = App.ActiveDocument
+if doc is None:
+    doc = App.newDocument("Hand7DOF")
+grp_name = "Hand7DOF"
+grp = doc.getObject(grp_name)
+if grp is None:
+    grp = doc.addObject("App::DocumentObjectGroup", grp_name)
+
+def upsert_box(name, l, w, h, pos=(0, 0, 0)):
+    obj = doc.getObject(name)
+    if obj is None:
+        obj = doc.addObject("Part::Box", name)
+        grp.addObject(obj)
+    obj.Length, obj.Width, obj.Height = l, w, h
+    obj.Placement.Base = App.Vector(*pos)
+    return obj
+
+def upsert_cyl(name, r, h, pos=(0, 0, 0), rot=(0, 0, 0)):
+    obj = doc.getObject(name)
+    if obj is None:
+        obj = doc.addObject("Part::Cylinder", name)
+        grp.addObject(obj)
+    obj.Radius, obj.Height = r, h
+    obj.Placement.Base = App.Vector(*pos)
+    obj.Placement.Rotation.setEulerAngles(*rot)  # degrees, XYZ
+    return obj
+
+P = PARAMS
+# Adapter: cylinder along X (rotate Y by 90deg) + flange plate at tip
+upsert_cyl("AdapterCyl", P["adapter_r"], P["adapter_len"], pos=(0, 0, 0), rot=(0, 90, 0))
+upsert_box("AdapterFlange", P["flange_t"], P["flange_xy"], P["flange_xy"],
+           pos=(P["adapter_len"], -P["flange_xy"]/2, -P["flange_xy"]/2))
+# H1 yaw housing centred 30 mm ahead of flange
+upsert_box("YawHousing", *P["yaw_box"], pos=(50-25, -37.5, -22.5))
+# H2 pitch housing centred 25 mm ahead of yaw centre
+upsert_box("PitchHousing", *P["pitch_box"], pos=(75-22.5, -32.5, -20))
+# H3 palm plate: 120(X) x 100(Y) x 18(Z), front edge at x=+105
+upsert_box("PalmPlate", *P["palm"], pos=(45, -50, -9))
+# H4/H5 knuckles at palm front corners (y = -/+30 mm)
+upsert_box("KnuckleL", *P["knuckle"], pos=(105, -41, -15))
+upsert_box("KnuckleR", *P["knuckle"], pos=(105, 19, -15))
+# H6/H7 fingers (Fetch size) standing +Z on knuckles
+upsert_box("FingerL", *P["finger"], pos=(105, -41+1, 15))
+upsert_box("FingerR", *P["finger"], pos=(105, 19+1, 15))
+
+doc.recompute()
+App.Console.PrintMessage("Hand7DOF rebuilt: H1 yaw, H2 pitch, H3 roll(palm), "
+                         "H4/H5 spread, H6/H7 prismatic fingers.\n")
