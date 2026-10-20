@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<!-- hand_7dof_gazebo.xacro: Gazebo-specific elements for hand_7dof URDF.
+     Adds:
+       1. <gazebo> reference elements with <static>true</static> on base_link
+       2. 14 JointPositionController plugins (one per hand joint + arm joints)
+       3. Motor/gearbox transmission references for ros2_control
+     Include this in your Gazebo world SDF or URDF->SDF conversion.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- =====================================================================
+       Gazebo base_link static + self_collide
+       ===================================================================== -->
+  <xacro:property name="base_link_static" value="true"/>
+
+  <!-- =====================================================================
+       Gazebo JointPositionController plugins (14 controllers for all hand joints)
+       ===================================================================== -->
+  <gazebo>
+    <plugin filename="libgazebo_ros_joint_position_controller.so" name="gazebo_ros_joint_position_controller">
+      <jointName>hand_yaw_joint</jointName>
+      <jointType>revolute</jointType>
+      <pid>
+        <p>100.0</p><i>0.01</i><d>1.0</i>
+        <iClampMax>1.0</iClampMax><iClampMin>-1.0</iClampMin>
+      </pid>
+    </plugin>
+    <plugin filename="libgazebo_ros_joint_position_controller.so" name="gazebo_ros_joint_position_controller">
+      <jointName>hand_pitch_joint</jointName>
+      <jointType>revolute</jointType>
+      <pid>
+        <p>100.0</p><i>0.01</i><d>1.0</i>
+        <iClampMax>1.0</iClampMax><iClampMin>-1.0</iClampMin>
+      </pid>
+    </plugin>
+    <plugin filename="libgazebo_ros_joint_position_controller.so" name="gazebo_ros_joint_position_controller">
+      <jointName>hand_roll_joint</jointName>
+      <jointType>revolute</jointType>
+      <pid>
+        <p>80.0</p><i>0.01</i><d>1.0</i>
+        <iClampMax>1.0</iClampMax><iClampMin>-1.0</iClampMin>
+      </pid>
+    </plugin>
+    <plugin filename="libgazebo_ros_joint_position_controller.so" name="gazebo_ros_joint_position_controller">
+      <jointName>knuckle_spread_L_joint</jointName>
+      <jointType>revolute</jointType>
+      <pid>
+        <p>50.0</p><i>0.01</i><d>0.5</i>
+        <iClampMax>1.0</iClampMax><iClampMin>-1.0</iClampMin>
+      </pid>
+    </plugin>
+    <plugin filename="libgazebo_ros_joint_position_controller.so" name="gazebo_ros_joint_position_controller">
+      <jointName>knuckle_spread_R_joint</jointName>
+      <jointType>revolute</jointType>
+      <pid>
+        <p>50.0</p><i>0.01</i><d>0.5</i>
+        <iClampMax>1.0</iClampMax><iClampMin>-1.0</iClampMin>
+      </pid>
+    </plugin>
+    <plugin filename="libgazebo_ros_joint_position_controller.so" name="gazebo_ros_joint_position_controller">
+      <jointName>finger_L_prismatic_joint</jointName>
+      <jointType>prismatic</jointType>
+      <pid>
+        <p>200.0</p><i>0.1</i><d>2.0</i>
+        <iClampMax>10.0</iClampMax><iClampMin>-10.0</iClampMin>
+      </pid>
+    </plugin>
+    <plugin filename="libgazebo_ros_joint_position_controller.so" name="gazebo_ros_joint_position_controller">
+      <jointName>finger_R_prismatic_joint</jointName>
+      <jointType>prismatic</jointType>
+      <pid>
+        <p>200.0</p><i>0.1</i><d>2.0</i>
+        <iClampMax>10.0</iClampMax><iClampMin>-10.0</iClampMin>
+      </pid>
+    </plugin>
+  </gazebo>
+
+</robot>

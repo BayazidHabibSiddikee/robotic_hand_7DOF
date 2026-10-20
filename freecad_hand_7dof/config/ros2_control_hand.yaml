@@ -1,18 +1,65 @@
 # 7-DOF hand ros2_control block for the combined arm+hand URDF
 # (fetch_7dof_with_hand.urdf). Merge into your controller_manager spawner:
 #   ros2 run controller_manager spawner hand_joint_trajectory_controller
+# Motor + gearbox mechanical reductions (SimpleTransmission) per joint:
 hand_joint_trajectory_controller:
   ros__parameters:
     joints:
-      - hand_yaw_joint            # H1 revolute Z +-90 deg
-      - hand_pitch_joint          # H2 revolute Y +-60 deg
-      - hand_roll_joint           # H3 revolute X +-35 deg
-      - knuckle_spread_L_joint    # H4 revolute Z 0..30 deg
-      - knuckle_spread_R_joint    # H5 revolute Z 0..30 deg
-      - finger_L_prismatic_joint  # H6 prismatic 0..0.05 m (Fetch-compatible)
-      - finger_R_prismatic_joint  # H7 prismatic 0..0.05 m (Fetch-compatible)
+      - hand_yaw_joint            # H1 revolute Z +-90 deg, motor: EC22, gearbox: GP22A 10:1
+      - hand_pitch_joint          # H2 revolute Y +-60 deg, motor: EC22, gearbox: GP22A 10:1
+      - hand_roll_joint           # H3 revolute X +-35 deg, motor: EC20, gearbox: GP20 8:1
+      - knuckle_spread_L_joint    # H4 revolute Z 0..30 deg, motor: EC13, gearbox: GP13A 6:1
+      - knuckle_spread_R_joint    # H5 revolute Z 0..30 deg, motor: EC13, gearbox: GP13A 6:1
+      - finger_L_prismatic_joint  # H6 prismatic 0..0.05 m (Fetch-compatible), motor: EC10, gearbox: GP10A 12:1
+      - finger_R_prismatic_joint  # H7 prismatic 0..0.05 m (Fetch-compatible), motor: EC10, gearbox: GP10A 12:1
     command_interfaces:
       - position
     state_interfaces:
       - position
       - velocity
+
+# Motor/gearbox parameters per joint (for Gazebo JointPositionController plugins)
+hand_motor_parameters:
+  ros__parameters:
+    hand_yaw:
+      motor_inertia: [5.0625e-05, 5.0625e-05, 3.7969e-05]
+      gearbox_inertia: [1.2750e-04, 1.2750e-04, 6.2500e-05]
+      mechanical_reduction: 10.0
+      motor_mass: 0.150
+      gearbox_mass: 0.200
+    hand_pitch:
+      motor_inertia: [5.0625e-05, 5.0625e-05, 3.7969e-05]
+      gearbox_inertia: [1.2750e-04, 1.2750e-04, 6.2500e-05]
+      mechanical_reduction: 10.0
+      motor_mass: 0.150
+      gearbox_mass: 0.200
+    hand_roll:
+      motor_inertia: [3.6267e-05, 3.6267e-05, 1.0240e-05]
+      gearbox_inertia: [6.9829e-05, 6.9829e-05, 2.1660e-05]
+      mechanical_reduction: 8.0
+      motor_mass: 0.080
+      gearbox_mass: 0.120
+    knuckle_spread_L:
+      motor_inertia: [8.0833e-06, 8.0833e-06, 3.0250e-06]
+      gearbox_inertia: [2.8833e-05, 2.8833e-05, 7.8400e-06]
+      mechanical_reduction: 6.0
+      motor_mass: 0.050
+      gearbox_mass: 0.080
+    knuckle_spread_R:
+      motor_inertia: [8.0833e-06, 8.0833e-06, 3.0250e-06]
+      gearbox_inertia: [2.8833e-05, 2.8833e-05, 7.8400e-06]
+      mechanical_reduction: 6.0
+      motor_mass: 0.050
+      gearbox_mass: 0.080
+    finger_L:
+      motor_inertia: [2.1500e-05, 2.1500e-05, 2.0000e-06]
+      gearbox_inertia: [2.1625e-05, 2.1625e-05, 5.8800e-06]
+      mechanical_reduction: 12.0
+      motor_mass: 0.040
+      gearbox_mass: 0.060
+    finger_R:
+      motor_inertia: [2.1500e-05, 2.1500e-05, 2.0000e-06]
+      gearbox_inertia: [2.1625e-05, 2.1625e-05, 5.8800e-06]
+      mechanical_reduction: 12.0
+      motor_mass: 0.040
+      gearbox_mass: 0.060

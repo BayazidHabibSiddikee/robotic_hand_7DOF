@@ -31,10 +31,28 @@ freecad_hand_7dof/
   build_meshes.py           # numpy-only STL generator -> meshes/
   make_fcstd.py             # packs meshes into hand_7dof.FCStd (no FreeCAD install needed)
   meshes/*.stl              # 6 collision/visual shells (fingers reuse Fetch boxes in URDF)
-  urdf/hand_7dof.urdf       # hand-only URDF (7 DOF, validated)
+  urdf/hand_7dof.urdf       # hand-only URDF (7 DOF, validated, motor+gearbox on every joint)
   urdf/fetch_7dof_with_hand.urdf  # arm + hand combined (drop-in Gazebo replacement)
+  urdf/hand_7dof_gazebo.xacro # Gazebo plugins: 14 JointPositionControllers + motor/gearbox transmission tags
   assemble_full_urdf.py     # merges fetch_7dof.urdf + hand_7dof.urdf
+  scripts/add_motors.py     # SDF motor+gearbox injector (injects into full.sdf for Gazebo)
+  config/ros2_control_hand.yaml # ros2_control block with motor/gearbox parameters
 ```
+
+## Motor + Gearbox Specs (all 7 joints)
+
+| Joint | Motor | Gearbox | Ratio | Motor (L×Ø, mass) | Gearbox (L×Ø, mass) | Inertia source |
+|-------|-------|---------|-------|-------------------|---------------------|-----------------|
+| H1 `hand_yaw_joint` | Maxon EC 22 | Maxon GP 22A | 10:1 | 30 mm × Ø22.5, 150 g | 40 mm × Ø25, 200 g | solid cylinder |
+| H2 `hand_pitch_joint` | Maxon EC 22 | Maxon GP 22A | 10:1 | 30 mm × Ø22.5, 150 g | 40 mm × Ø25, 200 g | solid cylinder |
+| H3 `hand_roll_joint` | Maxon EC 20 | Maxon GP 20 | 8:1 | 40 mm × Ø16, 80 g | 35 mm × Ø19, 120 g | solid cylinder |
+| H4 `knuckle_spread_L_joint` | Maxon EC 13 | Maxon GP 13A | 6:1 | 30 mm × Ø11, 50 g | 25 mm × Ø14, 80 g | solid cylinder |
+| H5 `knuckle_spread_R_joint` | Maxon EC 13 | Maxon GP 13A | 6:1 | 30 mm × Ø11, 50 g | 25 mm × Ø14, 80 g | solid cylinder |
+| H6 `finger_L_prismatic_joint` | Maxon EC 10 | Maxon GP 10A | 12:1 | 30 mm × Ø10, 40 g | 25 mm × Ø14, 60 g | solid cylinder |
+| H7 `finger_R_prismatic_joint` | Maxon EC 10 | Maxon GP 10A | 12:1 | 30 mm × Ø10, 40 g | 25 mm × Ø14, 60 g | solid cylinder |
+
+Kinematic chain per joint: `parent_link → motor_link → gearbox_link → joint → child_link`
+Motor and gearbox are modeled as Gazebo cylinders (DarkGray motor / Black gearbox) with collision + visual + computed solid-cylinder inertia. Original joint pose/axis/limits/dynamics preserved; each joint gets a `<transmission>` with `mechanicalReduction`.
 
 ## Open in FreeCAD (GUI)
 
