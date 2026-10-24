@@ -14,3 +14,7 @@ test_launch.py
 # IDE
 .vscode/
 .idea/
+
+# Vendor CAD downloads (large, licensed) — keep the README
+freecad_hand_7dof/vendor/*
+!freecad_hand_7dof/vendor/README.md

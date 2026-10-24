@@ -1,0 +1,388 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="hand_7dof">
+    <pose>0 0 0 0 0 0</pose>
+    <static>false</static>
+    <self_collide>false</self_collide>
+
+    <link name="hand_mount_link">
+      <inertial><pose>0 0 0 0 0 0</pose><mass>0.001</mass>
+        <inertia><ixx>1e-06</ixx><ixy>0</ixy><ixz>0</ixz>
+                 <iyy>1e-06</iyy><iyz>0</iyz><izz>1e-06</izz></inertia>
+      </inertial>
+    </link>
+    <link name="hand_adapter_link">
+      <inertial>
+        <pose>0.027753 0 0 0 0 0</pose>
+        <mass>0.157640028</mass>
+        <inertia>
+          <ixx>0.000088077</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.000071759</iyy><iyz>0</iyz><izz>0.00007172</izz>
+        </inertia>
+      </inertial>
+      <collision name="hand_adapter_link_collision">
+        <geometry><mesh><uri>meshes/hand_adapter_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+      </collision>
+      <visual name="hand_adapter_link_visual">
+        <geometry><mesh><uri>meshes/hand_adapter_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material>
+          <script>
+            <uri>file://Gazebo/DarkGray</uri>
+            <name>Gazebo/DarkGray</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <link name="hand_yaw_link">
+      <inertial>
+        <pose>0.023 0 0 0 0 0</pose>
+        <mass>0.17063736</mass>
+        <inertia>
+          <ixx>0.000098099</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.000054728</iyy><iyz>0</iyz><izz>0.000097997</izz>
+        </inertia>
+      </inertial>
+      <collision name="hand_yaw_link_collision">
+        <geometry><mesh><uri>meshes/hand_yaw_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+      </collision>
+      <visual name="hand_yaw_link_visual">
+        <geometry><mesh><uri>meshes/hand_yaw_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material>
+          <script>
+            <uri>file://Gazebo/Blue</uri>
+            <name>Gazebo/Blue</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <link name="hand_pitch_link">
+      <inertial>
+        <pose>0.022 0 0 0 0 0</pose>
+        <mass>0.132914587</mass>
+        <inertia>
+          <ixx>0.000061599</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.000037267</iyy><iyz>0</iyz><izz>0.000063262</izz>
+        </inertia>
+      </inertial>
+      <collision name="hand_pitch_link_collision">
+        <geometry><mesh><uri>meshes/hand_pitch_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+      </collision>
+      <visual name="hand_pitch_link_visual">
+        <geometry><mesh><uri>meshes/hand_pitch_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material>
+          <script>
+            <uri>file://Gazebo/White</uri>
+            <name>Gazebo/White</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <link name="hand_palm_link">
+      <inertial>
+        <pose>0.05538 0 0.001755 0 0 0</pose>
+        <mass>0.281131485</mass>
+        <inertia>
+          <ixx>0.00023344</ixx><ixy>0</ixy><ixz>0.000014496</ixz>
+          <iyy>0.000320478</iyy><iyz>0</iyz><izz>0.000526143</izz>
+        </inertia>
+      </inertial>
+      <collision name="hand_palm_link_collision">
+        <geometry><mesh><uri>meshes/hand_palm_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+      </collision>
+      <visual name="hand_palm_link_visual">
+        <geometry><mesh><uri>meshes/hand_palm_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material>
+          <script>
+            <uri>file://Gazebo/White</uri>
+            <name>Gazebo/White</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <link name="hand_knuckle_l_link">
+      <inertial>
+        <pose>0.014508 0 0 0 0 0</pose>
+        <mass>0.034706748</mass>
+        <inertia>
+          <ixx>0.00000415</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.000007625</iyy><iyz>0</iyz><izz>0.000006284</izz>
+        </inertia>
+      </inertial>
+      <collision name="hand_knuckle_l_link_collision">
+        <geometry><mesh><uri>meshes/hand_knuckle_l_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+      </collision>
+      <visual name="hand_knuckle_l_link_visual">
+        <geometry><mesh><uri>meshes/hand_knuckle_l_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material>
+          <script>
+            <uri>file://Gazebo/DarkGray</uri>
+            <name>Gazebo/DarkGray</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <link name="hand_knuckle_r_link">
+      <inertial>
+        <pose>0.014508 0 0 0 0 0</pose>
+        <mass>0.034706748</mass>
+        <inertia>
+          <ixx>0.00000415</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.000007625</iyy><iyz>0</iyz><izz>0.000006284</izz>
+        </inertia>
+      </inertial>
+      <collision name="hand_knuckle_r_link_collision">
+        <geometry><mesh><uri>meshes/hand_knuckle_r_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+      </collision>
+      <visual name="hand_knuckle_r_link_visual">
+        <geometry><mesh><uri>meshes/hand_knuckle_r_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material>
+          <script>
+            <uri>file://Gazebo/DarkGray</uri>
+            <name>Gazebo/DarkGray</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <link name="hand_finger_l_link">
+      <inertial>
+        <pose>0 0.000757 0.037106 0 0 0</pose>
+        <mass>0.052419288</mass>
+        <inertia>
+          <ixx>0.000024547</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.000026998</iyy><iyz>0.000000203</iyz><izz>0.000006448</izz>
+        </inertia>
+      </inertial>
+      <collision name="hand_finger_l_link_collision">
+        <geometry><mesh><uri>meshes/hand_finger_l_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+      </collision>
+      <visual name="hand_finger_l_link_visual">
+        <geometry><mesh><uri>meshes/hand_finger_l_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material>
+          <script>
+            <uri>file://Gazebo/Green</uri>
+            <name>Gazebo/Green</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <link name="hand_finger_r_link">
+      <inertial>
+        <pose>0 -0.000757 0.037106 0 0 0</pose>
+        <mass>0.052419288</mass>
+        <inertia>
+          <ixx>0.000024547</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.000026998</iyy><iyz>-0.000000203</iyz><izz>0.000006448</izz>
+        </inertia>
+      </inertial>
+      <collision name="hand_finger_r_link_collision">
+        <geometry><mesh><uri>meshes/hand_finger_r_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+      </collision>
+      <visual name="hand_finger_r_link_visual">
+        <geometry><mesh><uri>meshes/hand_finger_r_link.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material>
+          <script>
+            <uri>file://Gazebo/Green</uri>
+            <name>Gazebo/Green</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+    <joint name="hand_adapter_fixed_joint" type="fixed">
+      <parent>hand_mount_link</parent><child>hand_adapter_link</child>
+      <pose>0 0 0 0 0 0</pose>
+    </joint>
+    <joint name="hand_yaw_joint" type="revolute">
+      <parent>hand_adapter_link</parent><child>hand_yaw_link</child>
+      <pose>0.046 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+      <limits>
+        <lower>-1.5708</lower><upper>1.5708</upper>
+        <effort>40</effort><velocity>1.5</velocity>
+        <dynamics><damping>0.5</damping><friction>0.1</friction></dynamics>
+      </limits>
+      <physics>
+        <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+      </physics>
+    </joint>
+    <joint name="hand_pitch_joint" type="revolute">
+      <parent>hand_yaw_link</parent><child>hand_pitch_link</child>
+      <pose>0.046 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+      <limits>
+        <lower>-1.0472</lower><upper>1.0472</upper>
+        <effort>40</effort><velocity>1.5</velocity>
+        <dynamics><damping>0.5</damping><friction>0.1</friction></dynamics>
+      </limits>
+      <physics>
+        <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+      </physics>
+    </joint>
+    <joint name="hand_roll_joint" type="revolute">
+      <parent>hand_pitch_link</parent><child>hand_palm_link</child>
+      <pose>0.044 0 0 0 0 0</pose>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+      <limits>
+        <lower>-0.6109</lower><upper>0.6109</upper>
+        <effort>35</effort><velocity>1.5</velocity>
+        <dynamics><damping>0.5</damping><friction>0.1</friction></dynamics>
+      </limits>
+      <physics>
+        <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+      </physics>
+    </joint>
+    <joint name="knuckle_spread_L_joint" type="revolute">
+      <parent>hand_palm_link</parent><child>hand_knuckle_l_link</child>
+      <pose>0.118 -0.03 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+      <limits>
+        <lower>0</lower><upper>0.5236</upper>
+        <effort>20</effort><velocity>1.5</velocity>
+        <dynamics><damping>0.5</damping><friction>0.1</friction></dynamics>
+      </limits>
+      <physics>
+        <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+      </physics>
+    </joint>
+    <joint name="knuckle_spread_R_joint" type="revolute">
+      <parent>hand_palm_link</parent><child>hand_knuckle_r_link</child>
+      <pose>0.118 0.03 0 0 0 0</pose>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+      <limits>
+        <lower>-0.5236</lower><upper>0</upper>
+        <effort>20</effort><velocity>1.5</velocity>
+        <dynamics><damping>0.5</damping><friction>0.1</friction></dynamics>
+      </limits>
+      <physics>
+        <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+      </physics>
+    </joint>
+    <joint name="finger_L_prismatic_joint" type="prismatic">
+      <parent>hand_knuckle_l_link</parent><child>hand_finger_l_link</child>
+      <pose>0.038 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+      <limits>
+        <lower>0</lower><upper>0.05</upper>
+        <effort>60</effort><velocity>1.5</velocity>
+        <dynamics><damping>0.5</damping><friction>0.1</friction></dynamics>
+      </limits>
+      <physics>
+        <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+      </physics>
+    </joint>
+    <joint name="finger_R_prismatic_joint" type="prismatic">
+      <parent>hand_knuckle_r_link</parent><child>hand_finger_r_link</child>
+      <pose>0.038 0 0 0 0 0</pose>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+      <limits>
+        <lower>0</lower><upper>0.05</upper>
+        <effort>60</effort><velocity>1.5</velocity>
+        <dynamics><damping>0.5</damping><friction>0.1</friction></dynamics>
+      </limits>
+      <physics>
+        <friction><ode><mu>1.0</mu><mu2>1.0</mu2></ode></friction>
+      </physics>
+    </joint>
+
+    <plugin name="gz::sim::systems::JointStatePublisher"
+            filename="gz-sim-joint-state-publisher-system"/>
+    <plugin name="gz::sim::systems::Physics" filename="gz-sim-physics-system"/>
+
+      <plugin name="hand_yaw_joint_motor" filename="gz-sim-joint-position-controller-system">
+        <joint_name>hand_yaw_joint</joint_name>
+        <cmd_topic>/hand/cmd/yaw</cmd_topic>
+        <p_gain>12</p_gain>
+        <i_gain>0.6</i_gain>
+        <d_gain>0.4</d_gain>
+        <max_effort>40</max_effort>
+        <use_default_cmd>true</use_default_cmd>
+        <enable_topic>false</enable_topic>
+      </plugin>
+
+      <plugin name="hand_pitch_joint_motor" filename="gz-sim-joint-position-controller-system">
+        <joint_name>hand_pitch_joint</joint_name>
+        <cmd_topic>/hand/cmd/pitch</cmd_topic>
+        <p_gain>12</p_gain>
+        <i_gain>0.6</i_gain>
+        <d_gain>0.4</d_gain>
+        <max_effort>40</max_effort>
+        <use_default_cmd>true</use_default_cmd>
+        <enable_topic>false</enable_topic>
+      </plugin>
+
+      <plugin name="hand_roll_joint_motor" filename="gz-sim-joint-position-controller-system">
+        <joint_name>hand_roll_joint</joint_name>
+        <cmd_topic>/hand/cmd/roll</cmd_topic>
+        <p_gain>10</p_gain>
+        <i_gain>0.5</i_gain>
+        <d_gain>0.3</d_gain>
+        <max_effort>35</max_effort>
+        <use_default_cmd>true</use_default_cmd>
+        <enable_topic>false</enable_topic>
+      </plugin>
+
+      <plugin name="knuckle_spread_L_joint_motor" filename="gz-sim-joint-position-controller-system">
+        <joint_name>knuckle_spread_L_joint</joint_name>
+        <cmd_topic>/hand/cmd/spread_l</cmd_topic>
+        <p_gain>8</p_gain>
+        <i_gain>0.4</i_gain>
+        <d_gain>0.2</d_gain>
+        <max_effort>20</max_effort>
+        <use_default_cmd>true</use_default_cmd>
+        <enable_topic>false</enable_topic>
+      </plugin>
+
+      <plugin name="knuckle_spread_R_joint_motor" filename="gz-sim-joint-position-controller-system">
+        <joint_name>knuckle_spread_R_joint</joint_name>
+        <cmd_topic>/hand/cmd/spread_r</cmd_topic>
+        <p_gain>8</p_gain>
+        <i_gain>0.4</i_gain>
+        <d_gain>0.2</d_gain>
+        <max_effort>20</max_effort>
+        <use_default_cmd>true</use_default_cmd>
+        <enable_topic>false</enable_topic>
+      </plugin>
+
+      <plugin name="finger_L_prismatic_joint_motor" filename="gz-sim-joint-position-controller-system">
+        <joint_name>finger_L_prismatic_joint</joint_name>
+        <cmd_topic>/hand/cmd/finger_l</cmd_topic>
+        <p_gain>120</p_gain>
+        <i_gain>5</i_gain>
+        <d_gain>2</d_gain>
+        <max_effort>60</max_effort>
+        <use_default_cmd>true</use_default_cmd>
+        <enable_topic>false</enable_topic>
+      </plugin>
+
+      <plugin name="finger_R_prismatic_joint_motor" filename="gz-sim-joint-position-controller-system">
+        <joint_name>finger_R_prismatic_joint</joint_name>
+        <cmd_topic>/hand/cmd/finger_r</cmd_topic>
+        <p_gain>120</p_gain>
+        <i_gain>5</i_gain>
+        <d_gain>2</d_gain>
+        <max_effort>60</max_effort>
+        <use_default_cmd>true</use_default_cmd>
+        <enable_topic>false</enable_topic>
+      </plugin>
+  </model>
+</sdf>

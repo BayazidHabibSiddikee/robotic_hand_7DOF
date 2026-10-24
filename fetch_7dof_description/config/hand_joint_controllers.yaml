@@ -1,0 +1,52 @@
+# 7-DOF hand joint command topics and PID gains.
+# Each joint is driven by a gz-sim JointPositionController plugin
+# (see urdf/hand_7dof.sdf).  Publish a Double on the topic to command.
+
+hand_yaw_joint:
+  cmd_topic: /hand/cmd/yaw
+  type: revolute
+  limits: [-1.5708, 1.5708]
+  gains: p=12 i=0.6 d=0.4
+  max_effort: 40
+
+hand_pitch_joint:
+  cmd_topic: /hand/cmd/pitch
+  type: revolute
+  limits: [-1.0472, 1.0472]
+  gains: p=12 i=0.6 d=0.4
+  max_effort: 40
+
+hand_roll_joint:
+  cmd_topic: /hand/cmd/roll
+  type: revolute
+  limits: [-0.6109, 0.6109]
+  gains: p=10 i=0.5 d=0.3
+  max_effort: 35
+
+knuckle_spread_L_joint:
+  cmd_topic: /hand/cmd/spread_l
+  type: revolute
+  limits: [0, 0.5236]
+  gains: p=8 i=0.4 d=0.2
+  max_effort: 20
+
+knuckle_spread_R_joint:
+  cmd_topic: /hand/cmd/spread_r
+  type: revolute
+  limits: [-0.5236, 0]
+  gains: p=8 i=0.4 d=0.2
+  max_effort: 20
+
+finger_L_prismatic_joint:
+  cmd_topic: /hand/cmd/finger_l
+  type: prismatic
+  limits: [0, 0.05]
+  gains: p=120 i=5 d=2
+  max_effort: 60
+
+finger_R_prismatic_joint:
+  cmd_topic: /hand/cmd/finger_r
+  type: prismatic
+  limits: [0, 0.05]
+  gains: p=120 i=5 d=2
+  max_effort: 60
