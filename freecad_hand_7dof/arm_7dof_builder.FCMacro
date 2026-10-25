@@ -1,0 +1,259 @@
+# -*- coding: utf-8 -*-
+"""
+arm_7dof_builder.FCMacro
+Builds a 7-DOF serial robotic arm using parametric FreeCAD solids.
+STS3215 servo-based, C-shaped U-bracket connectors.
+Zero floating gaps — every link attaches directly to the previous servo horn.
+
+Usage: In FreeCAD, Macro → Macros... → Create "arm_7dof_builder" → paste this → Run.
+Output: Saves as arm_7dof.FCStd in the same directory as this macro.
+"""
+
+import FreeCAD as App
+import FreeCADGui as Gui
+import Part
+import math
+
+# ─── Constants (mm) ─────────────────────────────────────────────────────────
+STS3215_LEN = 45.4   # along output shaft axis (Z+ in local frame)
+STS3215_W   = 24.8
+STS3215_H   = 36.8
+
+HORN_OFFSET_X = 12.5   # ac1 offset from servo center along +X
+HORN_OFFSET_Z = 20.2   # ac1 offset from servo center along +Z
+
+LINK_OD     = 32.0   # outer diameter of tubular link
+LINK_ID     = 26.0   # inner diameter (wall thickness 3mm)
+BRACKET_TH  = 4.0    # C-bracket plate thickness
+BRACKET_W   = 10.0   # bracket width wrapping around servo
+
+JOINT_OFFSETS = [    # local offset from servo ac1 to next servo ac1
+    # (dx, dy, dz) in mm — along servo output horn direction
+    (0.0,  0.0, 50.0),  # Base → J1  (Z-axis yaw)
+    (0.0,  0.0, 45.0),  # J1  → J2  (Y-axis pitch)
+    (0.0,  0.0, 75.0),  # J2  → J3  (Z-axis roll)
+    (0.0,  0.0, 75.0),  # J3  → J4  (Y-axis pitch)
+    (0.0,  0.0, 65.0),  # J4  → J5  (Z-axis roll)
+    (0.0,  0.0, 65.0),  # J5  → J6  (Y-axis pitch)
+    (0.0,  0.0, 45.0),  # J6  → J7  (Z-axis roll)
+]
+
+AXIS_TYPES = ['Z', 'Y', 'Z', 'Y', 'Z', 'Y', 'Z']  # joint axes
+
+# ─── Helpers ─────────────────────────────────────────────────────────────────
+
+def make_servo_block(name):
+    """Create the STS3215 servo body as a solid box."""
+    body = Part.makeBox(STS3215_W, STS3215_H, STS3215_LEN,
+                        App.Vector(-STS3215_W/2, -STS3215_H/2, 0),
+                        App.Vector(0, 0, 1))  # Z-aligned
+    solid = Part.Solid(body)
+    feat = App.ActiveDocument.addObject("Part::Feature", name)
+    feat.Shape = solid
+    return feat
+
+
+def make_horn(name):
+    """Create the output horn (ac1) — a small cylinder on +Z face of servo."""
+    horn_r = 5.0
+    horn_h = 6.0
+    cyl = Part.makeCylinder(horn_r, horn_h)
+    cyl.translate(App.Vector(0, 0, STS3215_LEN/2))
+    solid = Part.Solid(cyl)
+    feat = App.ActiveDocument.addObject("Part::Feature", name)
+    feat.Shape = solid
+    return feat
+
+
+def make_tube_link(name, length):
+    """Cylindrical tubular link (hollow cylinder)."""
+    outer = Part.makeCylinder(LINK_OD/2, length)
+    inner = Part.makeCylinder(LINK_ID/2, length + 0.1)  # slightly longer to boolean-cut cleanly
+    inner.translate(App.Vector(0, 0, -0.05))
+    tube = outer.cut(inner)
+    solid = Part.Solid(tube)
+    feat = App.ActiveDocument.addObject("Part::Feature", name)
+    feat.Shape = solid
+    return feat
+
+
+def make_c_bracket(name, servo_w, servo_h, bracket_w=BRACKET_W, thick=BRACKET_TH):
+    """C-shaped bracket that wraps around servo side.
+    Creates a U-shape by unioning three boxes.
+    """
+    # Back plate (covers servo face)
+    back = Part.makeBox(thick, servo_h, servo_w)
+    # Two side plates (go up along sides)
+    side1 = Part.makeBox(bracket_w, servo_h + thick, thick)
+    side2 = Part.makeBox(bracket_w, servo_h + thick, thick)
+
+    # Position: back plate at z=0, side plates extending in +z
+    back Placement = App.Placement(App.Vector(0, 0, -servo_w/2 - thick/2), App.Rotation())
+    side1_pl = App.Placement(App.Vector(-bracket_w/2 - thick/2, 0, -servo_w/2), App.Rotation())
+    side2_pl = App.Placement(App.Vector(servo_w/2 + thick/2 + bracket_w/2, 0, -servo_w/2), App.Rotation())
+
+    backPl = Part.Shape([back]). translate(App.Vector(0, 0, -servo_w/2 - thick/2))
+    s1 = Part.Shape([side1]).translate(App.Vector(-bracket_w/2 - thick/2, 0, -servo_w/2))
+    s2 = Part.Shape([side2]).translate(App.Vector(servo_w/2 + thick/2 + bracket_w/2, 0, -servo_w/2))
+
+    compound = backPl.fuse(s1).fuse(s2)
+    solid = Part.Solid(compound)
+    feat = App.ActiveDocument.addObject("Part::Feature", name)
+    feat.Shape = solid
+    return feat
+
+
+def make_end_flange(name, radius=20, thickness=6):
+    """End flange for the gripper mount."""
+    flange = Part.makeCylinder(radius, thickness)
+    solid = Part.Solid(flange)
+    feat = App.ActiveDocument.addObject("Part::Feature", name)
+    feat.Shape = solid
+    return feat
+
+
+def place_servo(doc, name, pos, rot_axis, rot_deg):
+    """Place a servo body at given position and rotation."""
+    body = make_servo_block(name)
+    horn = make_horn(name + "_horn")
+
+    rot = App.Rotation()
+    if rot_axis == 'Y':
+        rot = App.Rotation(App.Vector(0, 1, 0), math.radians(rot_deg))
+    elif rot_axis == 'Z':
+        rot = App.Rotation(App.Vector(0, 0, 1), math.radians(rot_deg))
+    else:
+        rot = App.Rotation(App.Vector(0, 0, 1), math.radians(rot_deg))
+
+    body.Placement = App.Placement(pos, rot)
+    horn.Placement = App.Placement(
+        pos + rot.multVec(App.Vector(HORN_OFFSET_X, 0, HORN_OFFSET_Z)),
+        rot
+    )
+    return body, horn
+
+
+def make_joint_group(doc, idx, prev_pos, prev_rot, prev_horn_local):
+    """Create one servo + tube link + bracket assembly."""
+    offset = JOINT_OFFSETS[idx]
+    axis = AXIS_TYPES[idx]
+
+    # Rotation for this joint axis
+    if axis == 'Y':
+        joint_rot = App.Rotation(App.Vector(0, 1, 0), 0)  # default home position
+    else:
+        joint_rot = App.Rotation(App.Vector(0, 0, 1), 0)
+
+    # New servo position = prev horn position + offset along horn direction
+    horn_dir = prev_rot.multVec(App.Vector(HORN_OFFSET_X, 0, HORN_OFFSET_Z))
+    new_pos = prev_pos + horn_dir + App.Vector(*offset)
+
+    name_body = f"servo_{idx}"
+    name_horn = f"horn_{idx}"
+    name_tube = f"tube_{idx}"
+    name_bracket = f"bracket_{idx}"
+
+    body = make_servo_block(name_body)
+    horn = make_horn(name_horn)
+
+    # Position servo so its ac1 aligns with expected joint location
+    # Servo is centered; ac1 is at local (HORN_OFFSET_X, 0, HORN_OFFSET_Z + LEN/2)
+    body_center = new_pos - prev_rot.multVec(App.Vector(HORN_OFFSET_X, 0, HORN_OFFSET_Z)) - App.Vector(*offset)
+    body.Placement = App.Placement(body_center, prev_rot)
+    horn.Placement = App.Placement(new_pos, prev_rot)
+
+    # Tube link connecting to next joint
+    tube_len = sum(JOINT_OFFSETS[idx+1][:2]) + STS3215_LEN if idx < len(JOINT_OFFSETS)-1 else 40.0
+    tube = make_tube_link(name_tube, tube_len)
+    tube_center = new_pos + prev_rot.multVec(App.Vector(0, 0, STS3215_LEN/2 + tube_len/2))
+    tube.Placement = App.Placement(tube_center, prev_rot)
+
+    # C-bracket at servo body
+    bracket = make_c_bracket(name_bracket, STS3215_W, STS3215_H)
+    bracket.Placement = App.Placement(body_center, prev_rot)
+
+    return body, horn, tube, bracket, new_pos, prev_rot
+
+
+# ─── Main Builder ────────────────────────────────────────────────────────────
+
+def build_arm():
+    doc = App.newDocument("arm_7dof")
+    App.setActiveDocument("arm_7dof")
+    Gui.activeDocument().activeView().viewIsometric()
+
+    # Base plate
+    base = Part.makeBox(80, 80, 10)
+    base_solid = Part.Solid(base)
+    base_feat = doc.addObject("Part::Feature", "BasePlate")
+    base_feat.Shape = base_solid
+    base_feat.Placement = App.Placement(App.Vector(0, 0, -5), App.Rotation())
+
+    # Root position and rotation
+    root_pos = App.Vector(0, 0, 10)  # on top of base
+    root_rot = App.Rotation()  # identity — first joint rotates about Z
+
+    # Build 7 joints
+    prev_pos = root_pos
+    prev_rot = root_rot
+
+    joint_positions = [root_pos]  # store for URDF
+
+    for i in range(7):
+        axis = AXIS_TYPES[i]
+        # Apply joint rotation (home position = 0 for now, adjustable)
+        if axis == 'Y':
+            joint_rot = App.Rotation(App.Vector(0, 1, 0), 0)
+        else:
+            joint_rot = App.Rotation(App.Vector(0, 0, 1), 0)
+
+        new_rot = joint_rot.multVec(prev_rot)
+
+        # Servo body position
+        servo_local_to_horn = App.Vector(HORN_OFFSET_X, 0, HORN_OFFSET_Z)
+        horn_world = prev_pos + prev_rot.multVec(servo_local_to_horn)
+        offset = App.Vector(*JOINT_OFFSETS[i])
+        new_pos = horn_world + offset
+
+        # Create visual elements
+        # Servo body
+        body = make_servo_block(f"servo_{i}")
+        body_center = new_pos - new_rot.multVec(App.Vector(0, 0, STS3215_LEN/2))
+        body.Placement = App.Placement(body_center, new_rot)
+
+        # Output horn
+        horn = make_horn(f"horn_{i}")
+        horn_center = new_pos + new_rot.multVec(App.Vector(0, 0, STS3215_LEN/2 + 3))
+        horn.Placement = App.Placement(horn_center, new_rot)
+
+        # Tube link (connects to next servo)
+        if i < 6:
+            next_offset = App.Vector(*JOINT_OFFSETS[i+1])
+            tube_length = next_offset[2]  # primary axis length
+            tube = make_tube_link(f"tube_{i}", tube_length)
+            tube_center = new_pos + new_rot.multVec(App.Vector(0, 0, STS3215_LEN/2 + tube_length/2))
+            tube.Placement = App.Placement(tube_center, new_rot)
+
+        # C-bracket
+        bracket = make_c_bracket(f"bracket_{i}", STS3215_W, STS3215_H)
+        bracket.Placement = App.Placement(body_center, new_rot)
+
+        joint_positions.append(new_pos)
+        prev_pos = new_pos
+        prev_rot = new_rot
+
+    # End effector flange
+    flange = make_end_flange("EndFlange", radius=15, thickness=8)
+    flange_center = prev_pos + prev_rot.multVec(App.Vector(0, 0, 20))
+    flange.Placement = App.Placement(flange_center, prev_rot)
+
+    # Save
+    doc.saveAs("arm_7dof.FCStd")
+    print("Saved arm_7dof.FCStd")
+    print(f"Joint positions ({len(joint_positions)}):")
+    for i, pos in enumerate(joint_positions):
+        print(f"  J{i}: ({pos.X:.1f}, {pos.Y:.1f}, {pos.Z:.1f})")
+
+
+# ─── Run ─────────────────────────────────────────────────────────────────────
+build_arm()
