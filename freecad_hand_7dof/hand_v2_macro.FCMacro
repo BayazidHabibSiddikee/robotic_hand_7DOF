@@ -1,0 +1,255 @@
+# FreeCAD Macro: V2 Anthropomorphic Hand (Parametric)
+# Paste into Macro → Macros... → Create "hand_v2" → Execute
+# All dimensions in mm. Edit PARAMS dict below, then re-run.
+# After editing: File → Export each body to STL (meshes/) at scale=1.0,
+# then URDF scale=0.001 converts to metres.
+
+import FreeCAD as App
+import Part
+import math
+
+# ── PARAMS — edit these to resize the hand ───────────────────────────────────
+PARAMS = dict(
+    # Palm
+    palm_L=130.0,        # X length (wrist→fingertips)
+    palm_W=70.0,         # Y width
+    palm_T=18.0,         # Z thickness
+    boss_H=8.0,          # Finger boss height above palm
+    boss_W=14.0,         # Finger boss Y width
+    boss_D=22.0,         # Finger boss X depth
+    boss_start_x=98.0,   # X position of first boss from wrist
+    boss_spacing_y=14.0, # Y spacing between finger bosses
+    cable_ridge_H=5.0,   # Cable passage ridge height
+    cable_ridge_D=18.0,  # Cable passage ridge X depth
+
+    # Thumb
+    thumb_base_L=24.0,   # CMC base plate dimensions
+    thumb_base_W=22.0,
+    thumb_base_T=8.0,
+    thumb_P_L=22.0,      # Proximal phalanx
+    thumb_P_W=16.0,
+    thumb_P_T=10.0,
+    thumb_P_dome_r=6.0,  # MCP dome radius
+    thumb_D_L=16.0,      # Distal phalanx
+    thumb_D_W=14.0,
+    thumb_D_T=9.0,
+    thumb_D_tip_r=4.5,   # Fingertip radius
+
+    # Fingers (list of [lengths, widths, thicknesses, dome_r] for P/M/D)
+    fingers=dict(
+        index=dict(
+            P_L=26.0, P_W=10.0, P_T=8.0, P_dome=5.5,
+            M_L=20.0, M_W=8.0,  M_T=7.0, M_dome_t=4.5, M_dome_b=5.5,
+            D_L=16.0, D_W=7.0,  D_T=6.0, D_tip=3.5,
+            K_W=10.0, K_T=8.0,  # Knuckle bracket size
+        ),
+        middle=dict(
+            P_L=28.0, P_W=10.0, P_T=8.0, P_dome=5.5,
+            M_L=22.0, M_W=8.0,  M_T=7.0, M_dome_t=4.5, M_dome_b=5.5,
+            D_L=17.0, D_W=7.0,  D_T=6.0, D_tip=3.5,
+            K_W=10.0, K_T=8.0,
+        ),
+        ring=dict(
+            P_L=26.0, P_W=9.0,  P_T=7.0, P_dome=5.0,
+            M_L=20.0, M_W=7.0,  M_T=6.0, M_dome_t=4.0, M_dome_b=5.0,
+            D_L=15.0, D_W=6.0,  D_T=5.0, D_tip=3.0,
+            K_W=9.0,  K_T=7.0,
+        ),
+        little=dict(
+            P_L=22.0, P_W=8.0,  P_T=6.0, P_dome=4.5,
+            M_L=16.0, M_W=6.0,  M_T=5.0, M_dome_t=3.5, M_dome_b=4.5,
+            D_L=13.0, D_W=5.0,  D_T=4.0, D_tip=2.5,
+            K_W=8.0,  K_T=6.0,
+        ),
+    ),
+
+    # Wrist adapter
+    adapter_r=25.0,
+    adapter_len=30.0,
+    flange_size=70.0,
+    flange_t=20.0,
+)
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+def upsert_box(doc, grp, name, w, h, d, cx=0.0, cy=0.0, cz=0.0):
+    """Axis-aligned box. Returns Part object."""
+    obj = doc.getObject(name)
+    if obj is None:
+        obj = doc.addObject("Part::Box", name)
+        grp.addObject(obj)
+    obj.Length = w; obj.Width = d; obj.Height = h  # FreeCAD: Length=X, Width=Y, Height=Z
+    obj.Placement = App.Placement(App.Vector(cx-w/2, cy-d/2, cz-h/2), App.Rotation())
+    return obj
+
+
+def upsert_cyl(doc, grp, name, r, h, cx=0.0, cy=0.0, cz=0.0, axis="Z"):
+    """Cylinder. axis: 'X','Y',' or 'Z'."""
+    obj = doc.getObject(name)
+    if obj is None:
+        obj = doc.addObject("Part::Cylinder", name)
+        grp.addObject(obj)
+    obj.Radius = r
+    obj.Height = h
+    if axis == "X":
+        obj.Placement = App.Placement(App.Vector(cx, cy, cz),
+                                     App.Rotation(App.Vector(0,0,1), math.pi/2))
+    elif axis == "Y":
+        obj.Placement = App.Placement(App.Vector(cx, cy, cz),
+                                     App.Rotation(App.Vector(0,1,0), math.pi/2))
+    else:
+        obj.Placement = App.Placement(App.Vector(cx, cy, cz), App.Rotation())
+    return obj
+
+
+def upsert_sphere(doc, grp, name, r, cx=0.0, cy=0.0, cz=0.0):
+    obj = doc.getObject(name)
+    if obj is None:
+        obj = doc.addObject("Part::Sphere", name)
+        grp.addObject(obj)
+    obj.Radius = r
+    obj.Placement = App.Placement(App.Vector(cx, cy, cz), App.Rotation())
+    return obj
+
+
+def hollow_cylinder(doc, grp, name, r_out, r_in, h, cx=0.0, cy=0.0, cz=0.0, axis="Z"):
+    """Hollow cylinder via boolean cut (for bearing seats)."""
+    outer = upsert_cyl(doc, grp, name+"_outer", r_out, h, cx, cy, cz, axis)
+    inner = upsert_cyl(doc, grp, name+"_inner", r_in, h*1.1, cx, cy, cz, axis)
+    try:
+        shell = outer.Shape.cut(inner.Shape)
+        obj = doc.addObject("Part::Feature", name)
+        grp.addObject(obj)
+        obj.Shape = shell
+        doc.removeObject(name+"_outer")
+        doc.removeObject(name+"_inner")
+        return obj
+    except Exception as e:
+        App.Console.PrintError(f"  hollow_cyl error: {e}\n")
+        return outer  # fallback to solid
+
+
+def dome_on_end(doc, grp, parent_name, offset_x, r, axis="x", dir="pos"):
+    """Add a hemispherical dome to the +X or -X end of a named part.
+    Returns the dome Part object (for boolean fusion)."""
+    obj = doc.getObject(parent_name)
+    if obj is None:
+        App.Console.PrintError(f"  {parent_name} not found\n")
+        return None
+
+    # Compute end face center based on current placement and size
+    sz = obj.Shape.BoundingBox
+    if dir == "pos":
+        ex = sz.MaxX if axis=="x" else (sz.MaxY if axis=="y" else sz.MaxZ)
+    else:
+        ex = sz.MinX if axis=="x" else (sz.MinY if axis=="y" else sz.MinZ)
+    ey = sz.CenterY
+    ez = sz.CenterZ
+
+    dome_name = parent_name + "_dome"
+    dome = upsert_sphere(doc, grp, dome_name, r, cx=ex, cy=ey, cz=ez)
+
+    try:
+        fused = obj.Shape.fuse(dome.Shape)
+        obj.Shape = fused
+        doc.removeObject(dome_name)
+    except Exception as e:
+        App.Console.PrintError(f"  fuse error on {parent_name}: {e}\n")
+    return dome
+
+
+def build_hand():
+    doc = App.ActiveDocument
+    if doc is None:
+        doc = App.newDocument("HandV2")
+    grp = doc.getObject("HandV2")
+    if grp is None:
+        grp = doc.addObject("App::DocumentObjectGroup", "HandV2")
+    else:
+        # Clear old geometry
+        for child in list(grp.Group):
+            doc.removeObject(child.Name)
+
+    P = PARAMS
+    App.Console.PrintMessage("Building V2 hand...\n")
+
+    # ── Adapter ────────────────────────────────────────────────────────────
+    upsert_cyl(doc, grp, "AdapterCyl", P["adapter_r"], P["adapter_len"],
+               cx=P["adapter_len"]/2, cy=0, cz=0, axis="X")
+    upsert_box(doc, grp, "AdapterFlange", P["flange_t"], P["flange_size"], P["flange_size"],
+               cx=P["adapter_len"] + P["flange_t"]/2, cy=0, cz=0)
+
+    # ── Palm ───────────────────────────────────────────────────────────────
+    pl, pw, pt = P["palm_L"], P["palm_W"], P["palm_T"]
+    upsert_box(doc, grp, "PalmPlate", pl, pw, pt,
+               cx=pl/2, cy=0, cz=pt/2)
+    # Finger bosses
+    for i, y_off in enumerate([-2*P["boss_spacing_y"], -1*P["boss_spacing_y"],
+                                0, 1*P["boss_spacing_y"], 2*P["boss_spacing_y"]]):
+        upsert_box(doc, grp, f"PalmBoss{i}", P["boss_D"], P["boss_W"], P["boss_H"],
+                   cx=P["boss_start_x"] + P["boss_D"]/2, cy=y_off, cz=pt + P["boss_H"]/2)
+    # Cable ridge
+    upsert_box(doc, grp, "CableRidge", P["cable_ridge_D"], pw-4, P["cable_ridge_H"],
+               cx=P["cable_ridge_D"]/2, cy=0, cz=pt + P["cable_ridge_H"]/2)
+
+    # ── Thumb ──────────────────────────────────────────────────────────────
+    tb = P["thumb_base"]
+    upsert_box(doc, grp, "ThumbBase", tb[0], tb[1], tb[2],
+               cx=tb[0]/2, cy=tb[1]/2, cz=tb[2]/2)
+    # Thumb proximal
+    tp = P["thumb_P"]
+    upsert_box(doc, grp, "ThumbProximal", tp[0], tp[1], tp[2],
+               cx=tp[0]/2, cy=0, cz=tp[2]/2)
+    dome_on_end(doc, grp, "ThumbProximal", offset_x=tp[0], r=tp[3], dir="pos")
+    # Thumb distal
+    td = P["thumb_D"]
+    upsert_box(doc, grp, "ThumbDistal", td[0], td[1], td[2],
+               cx=td[0]/2, cy=0, cz=td[2]/2)
+    dome_on_end(doc, grp, "ThumbDistal", offset_x=td[0], r=td[3], dir="pos")
+
+    # ── Fingers ────────────────────────────────────────────────────────────
+    finger_xs = {-28: "Index", -14: "Middle", 0: "Ring", 14: "Little"}
+    for y_off, fname in finger_xs.items():
+        fc = P["fingers"][fname.lower()]
+        prefix = fname
+
+        # Knuckle bracket
+        upsert_box(doc, grp, f"{prefix}Knuckle",
+                   fc["K_W"], fc["K_W"]+4, fc["K_T"]+4,
+                   cx=4, cy=y_off, cz=fc["K_T"]/2 + P["boss_H"] + P["palm_T"])
+        # Hollow 683ZZ seat
+        hollow_cyl(doc, grp, f"{prefix}KnuckleBearing",
+                   3.5, 1.5, fc["K_T"]+6,
+                   cx=4, cy=y_off, cz=fc["K_T"]/2 + P["boss_H"] + P["palm_T"], axis="X")
+
+        # Proximal
+        upsert_box(doc, grp, f"{prefix}Proximal",
+                   fc["P_L"], fc["P_W"], fc["P_T"],
+                   cx=fc["P_L"]/2, cy=y_off, cz=fc["P_T"]/2 + P["boss_H"] + P["palm_T"])
+        dome_on_end(doc, grp, f"{prefix}Proximal",
+                    offset_x=fc["P_L"], r=fc["P_dome"], dir="pos")
+
+        # Middle
+        upsert_box(doc, grp, f"{prefix}Middle",
+                   fc["M_L"], fc["M_W"], fc["M_T"],
+                   cx=fc["M_L"]/2, cy=y_off,
+                   cz=fc["P_T"] + P["boss_H"] + P["palm_T"] + fc["M_T"]/2)
+        dome_on_end(doc, grp, f"{prefix}Middle",
+                    offset_x=fc["M_L"], r=fc["M_dome_t"], dir="pos")
+        dome_on_end(doc, grp, f"{prefix}Middle",
+                    offset_x=0, r=fc["M_dome_b"], dir="neg")
+
+        # Distal
+        upsert_box(doc, grp, f"{prefix}Distal",
+                   fc["D_L"], fc["D_W"], fc["D_T"],
+                   cx=fc["D_L"]/2, cy=y_off,
+                   cz=fc["P_T"] + fc["M_T"] + P["boss_H"] + P["palm_T"] + fc["D_T"]/2)
+        dome_on_end(doc, grp, f"{prefix}Distal",
+                    offset_x=fc["D_L"], r=fc["D_tip"], dir="pos")
+
+    doc.recompute()
+    App.Console.PrintMessage("HandV2 rebuilt. Export each part to STL.\n")
+
+
+if __name__ == "__main__":
+    build_hand()
