@@ -1,14 +1,10 @@
 controller_manager:
   ros__parameters:
-    # 25 Hz matches the Gymnasium pick-and-place control frequency
-    # (one action applied for 20 substeps of dt=0.002 s).
     update_rate: 25
     use_sim_time: true
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
     arm_joint_trajectory_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
-    gripper_joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
     hand_joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
@@ -29,32 +25,49 @@ arm_joint_trajectory_controller:
       - position
       - velocity
 
-gripper_joint_trajectory_controller:
+# V2 5-finger anthropomorphic hand — 7 actuated joints.
+# Each MCP joint drives its own finger via mimic joints (PIP 0.85×, DIP 0.6×PIP).
+# Thumb has 2 independent joints: CMC opposition (Z) + MCP flexion (Y).
+hand_joint_trajectory_controller:
   ros__parameters:
     joints:
-      - r_gripper_finger_joint
-      - l_gripper_finger_joint
+      - thumb_cmcmc_joint       # A1: thumb opposition  ±45°
+      - thumb_mcp_joint         # A2: thumb flexion     0..90°
+      - index_mcp_joint         # A3: index flexion     0..90°
+      - middle_mcp_joint        # A4: middle flexion    0..90°
+      - ring_mcp_joint          # A5: ring flexion      0..90°
+      - little_mcp_joint        # A6: little flexion    0..90°
     command_interfaces:
       - position
     state_interfaces:
       - position
       - velocity
 
-# 7-DOF FreeCAD hand (Option B). H1..H5 = wrist/palm revolute joints.
-# H6/H7 (finger_L/R_prismatic) are Fetch-compatible (0..0.05 m) and are
-# aliased here alongside the stock gripper controller for hand-only demos.
-hand_joint_trajectory_controller:
+# STS3215 servo specs per joint (for Gazebo JointPositionController PID tuning)
+# 55g, 45.2×24.7×35mm, 2.94N·m stall / 0.98N·m rated, 10:1 gearbox
+hand_motor_parameters:
   ros__parameters:
-    joints:
-      - hand_yaw_joint
-      - hand_pitch_joint
-      - hand_roll_joint
-      - knuckle_spread_L_joint
-      - knuckle_spread_R_joint
-      - finger_L_prismatic_joint
-      - finger_R_prismatic_joint
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-      - velocity
+    thumb_cmcmc:
+      motor_inertia: [7.3e-6, 1.37e-5, 1.19e-5]
+      mechanical_reduction: 10.0
+      motor_mass: 0.055
+    thumb_mcp:
+      motor_inertia: [7.3e-6, 1.37e-5, 1.19e-5]
+      mechanical_reduction: 10.0
+      motor_mass: 0.055
+    index_mcp:
+      motor_inertia: [7.3e-6, 1.37e-5, 1.19e-5]
+      mechanical_reduction: 10.0
+      motor_mass: 0.055
+    middle_mcp:
+      motor_inertia: [7.3e-6, 1.37e-5, 1.19e-5]
+      mechanical_reduction: 10.0
+      motor_mass: 0.055
+    ring_mcp:
+      motor_inertia: [7.3e-6, 1.37e-5, 1.19e-5]
+      mechanical_reduction: 10.0
+      motor_mass: 0.055
+    little_mcp:
+      motor_inertia: [7.3e-6, 1.37e-5, 1.19e-5]
+      mechanical_reduction: 10.0
+      motor_mass: 0.055

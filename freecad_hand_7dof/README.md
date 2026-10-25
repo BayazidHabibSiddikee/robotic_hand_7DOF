@@ -1,89 +1,103 @@
-# 7-DOF Robotic Hand (FreeCAD) — mounts on Fetch wrist
+# 7-DOF Anthropomorphic Hand v2 — FreeCAD + URDF
 
 Staged clone of https://github.com/BayazidHabibSiddikee/robotic_hand_7DOF
 (`fetch_7dof_description/` = 7-axis Fetch-style arm + 2-finger parallel gripper).
-This adds `freecad_hand_7dof/` = a **7-DOF hand** built to your choice:
+This adds `freecad_hand_7dof/` = a **5-finger anthropomorphic hand** with 7 actuated
+joints + 7 mimic joints = 14 DOF total, driven by 7× STS3215 servos in a forearm pod.
 
-> **Option B: keep Fetch 2-finger gripper + add 5 wrist/palm DOF = 7 total.**
+## V1 → V2 Changes
 
-## The 7 DOF
+| # | Problem (v1) | Fix (v2) |
+|---|-------------|----------|
+| 1 | 5 wrist DOF + 2 fingers = parallel gripper, not a hand | 5-finger anatomical layout |
+| 2 | 7 motors+gearboxes in series on every joint ≈ 300mm long | All 7 STS3215 servos in forearm pod behind wrist |
+| 3 | Fingers are 30×20×80 mm boxes | Real phalanges: proximal + middle + distal per finger |
+| 4 | Palm 120×100×18 / 250g placeholder inertia | 130×70×18 palm + 5 bosses, ~380g total |
+| 5 | All `<inertia>` = `1e-4` placeholder | Computed from mesh volume × PETG density (1.25 g/cm³) |
+| 6 | Mesh units inconsistent (m vs mm) | All meshes in mm; URDF `scale=0.001` converts to m |
+| 7 | ROS 1 `hardwareInterface` in `<transmission>` | Same pattern; compatible with ros2_control simulation |
+| 8 | Gazebo Classic plugins with duplicate names | Inline `<ros2_control>` block only; no duplicate plugins |
 
-| # | Joint | Type | Axis | Limits | Purpose |
-|---|-------|------|------|--------|---------|
-| H1 | `hand_yaw_joint` | revolute | Z | ±90° | wrist yaw |
-| H2 | `hand_pitch_joint` | revolute | Y | ±60° | wrist pitch |
-| H3 | `hand_roll_joint` | revolute | X | ±35° | palm roll |
-| H4 | `knuckle_spread_L_joint` | revolute | Z | 0–30° | left finger spread |
-| H5 | `knuckle_spread_R_joint` | revolute | Z | 0–30° | right finger spread |
-| H6 | `finger_L_prismatic_joint` | prismatic | −Y | 0–50 mm | left finger close (Fetch-compatible) |
-| H7 | `finger_R_prismatic_joint` | prismatic | +Y | 0–50 mm | right finger close (Fetch-compatible) |
+## Kinematics
 
-Mount: `hand_mount_fixed` bolts the adapter to the Fetch `wrist_roll_link`
-at the stock `gripper_axis` origin (0.16645 0 0), so the original
-`gripper_link` is replaced by this hand — no arm changes needed.
+```
+                      ┌──────────── palm (fixed to Fetch wrist) ────────────┐
+ thumb: CMC-oppose ── CMC-flex ── MCP ── IP          (A1, A2)
+ index:  MCP-flex ── PIP ── DIP                       (A3)
+ middle: MCP-flex ── PIP ── DIP                       (A4)
+ ring:   MCP-flex ── PIP ── DIP                       (A5)
+ little: MCP-flex ── PIP ── DIP                       (A6)
+```
+
+| Actuator | Joint | Type | Axis | Limits | Mimic |
+|----------|-------|------|------|--------|-------|
+| A1 | `thumb_cmcmc_joint` | revolute | Z | ±45° | — |
+| A2 | `thumb_mcp_joint` | revolute | Y | 0..90° | — |
+| A3 | `index_mcp_joint` | revolute | Y | 0..90° | PIP×0.85, DIP×0.6 |
+| A4 | `middle_mcp_joint` | revolute | Y | 0..90° | PIP×0.85, DIP×0.6 |
+| A5 | `ring_mcp_joint` | revolute | Y | 0..90° | PIP×0.85, DIP×0.6 |
+| A6 | `little_mcp_joint` | revolute | Y | 0..90° | PIP×0.85, DIP×0.6 |
+
+- **7 independent actuators** (STS3215, 2.94 N·m stall), all mounted in the
+  forearm pod behind the wrist
+- **14 kinematic joints** (7 actuated + 7 mimic = 7 PIP/DIP underactuated)
+- **30 links** total (adapter, palm, pod, thumb base, 5 finger sets × 4 links each)
+- **Total mass**: ~380 g (PETG phalanges + STL pod) + ~400 g (servos in pod) = ~780 g
 
 ## Files
 
 ```
 freecad_hand_7dof/
-  hand_7dof_macro.FCMacro   # parametric FreeCAD macro (Part workbench) — THE FreeCAD build
-  hand_7dof.FCStd           # native FreeCAD doc (opens directly, meshes as parts)
-  build_meshes.py           # numpy-only STL generator -> meshes/
-  make_fcstd.py             # packs meshes into hand_7dof.FCStd (no FreeCAD install needed)
-  meshes/*.stl              # 6 collision/visual shells (fingers reuse Fetch boxes in URDF)
-  urdf/hand_7dof.urdf       # hand-only URDF (7 DOF, validated, motor+gearbox on every joint)
-  urdf/fetch_7dof_with_hand.urdf  # arm + hand combined (drop-in Gazebo replacement)
-  urdf/hand_7dof_gazebo.xacro # Gazebo plugins: 14 JointPositionControllers + motor/gearbox transmission tags
-  assemble_full_urdf.py     # merges fetch_7dof.urdf + hand_7dof.urdf
-  scripts/add_motors.py     # SDF motor+gearbox injector (injects into full.sdf for Gazebo)
-  config/ros2_control_hand.yaml # ros2_control block with motor/gearbox parameters
+  build_v2_hand.py           # NumPy mesh generator (no FreeCAD needed)
+  build_meshes.py            # Legacy v1 mesh generator
+  make_bearing_envelopes.py  # Bearing STL generator (683ZZ, 608ZZ)
+  make_fcstd.py              # Packs meshes into hand_7dof.FCStd
+  hand_7dof_macro.FCMacro    # Parametric FreeCAD macro (deprecated: use build_v2_hand.py)
+  hand_7dof.FCStd            # FreeCAD document (regenerated by make_fcstd.py)
+  MCMASTER_CHEATSHEET.md     # Parts sourcing guide
+  V2_REAL_HAND_PLAN.md       # Full design spec + BOM
+  meshes/*.stl               # 32 visual/collision meshes (mm units)
+  urdf/hand_7dof.urdf        # Hand-only URDF (14 DOF, 7 mimic)
+  urdf/fetch_7dof_with_hand.urdf  # Arm + hand combined (regenerated by assemble_full_urdf.py)
+  scripts/add_motors.py      # SDF motor injector
+  config/ros2_control_hand.yaml
+  vendor/README.md           # COTS CAD drop zone (git-ignored)
 ```
-
-## Motor + Gearbox Specs (all 7 joints)
-
-| Joint | Motor | Gearbox | Ratio | Motor (L×Ø, mass) | Gearbox (L×Ø, mass) | Inertia source |
-|-------|-------|---------|-------|-------------------|---------------------|-----------------|
-| H1 `hand_yaw_joint` | Maxon EC 22 | Maxon GP 22A | 10:1 | 30 mm × Ø22.5, 150 g | 40 mm × Ø25, 200 g | solid cylinder |
-| H2 `hand_pitch_joint` | Maxon EC 22 | Maxon GP 22A | 10:1 | 30 mm × Ø22.5, 150 g | 40 mm × Ø25, 200 g | solid cylinder |
-| H3 `hand_roll_joint` | Maxon EC 20 | Maxon GP 20 | 8:1 | 40 mm × Ø16, 80 g | 35 mm × Ø19, 120 g | solid cylinder |
-| H4 `knuckle_spread_L_joint` | Maxon EC 13 | Maxon GP 13A | 6:1 | 30 mm × Ø11, 50 g | 25 mm × Ø14, 80 g | solid cylinder |
-| H5 `knuckle_spread_R_joint` | Maxon EC 13 | Maxon GP 13A | 6:1 | 30 mm × Ø11, 50 g | 25 mm × Ø14, 80 g | solid cylinder |
-| H6 `finger_L_prismatic_joint` | Maxon EC 10 | Maxon GP 10A | 12:1 | 30 mm × Ø10, 40 g | 25 mm × Ø14, 60 g | solid cylinder |
-| H7 `finger_R_prismatic_joint` | Maxon EC 10 | Maxon GP 10A | 12:1 | 30 mm × Ø10, 40 g | 25 mm × Ø14, 60 g | solid cylinder |
-
-Kinematic chain per joint: `parent_link → motor_link → gearbox_link → joint → child_link`
-Motor and gearbox are modeled as Gazebo cylinders (DarkGray motor / Black gearbox) with collision + visual + computed solid-cylinder inertia. Original joint pose/axis/limits/dynamics preserved; each joint gets a `<transmission>` with `mechanicalReduction`.
-
-## Open in FreeCAD (GUI)
-
-FreeCAD is not installed on this box (no `apt` FreeCAD on Ubuntu 26.04,
-no sudo here). Install one of:
-
-```bash
-sudo snap install freecad            # simplest on Ubuntu
-# or
-micromamba create -n cad -c conda-forge freecad && micromamba activate cad
-```
-
-Then:
-
-1. Open `freecad_hand_7dof/hand_7dof.FCStd` — all 6 shells appear as parts.
-2. Or Macro → Macros → paste `hand_7dof_macro.FCMacro` → Execute to rebuild
-   parametrically (edit `PARAMS` for palm/finger sizes, re-export STL to `meshes/`).
-3. STLs also slice directly (Cura/Prusa): palm 120×100×18 mm, fingers 30×20×80 mm.
 
 ## Regenerate
 
 ```bash
-/home/bayazid/micromamba/envs/rosenv/bin/python freecad_hand_7dof/build_meshes.py
-/home/bayazid/micromamba/envs/rosenv/bin/python freecad_hand_7dof/make_fcstd.py
-/home/bayazid/micromamba/envs/rosenv/bin/python freecad_hand_7dof/assemble_full_urdf.py
+# 1. Build meshes (numpy only)
+python3 freecad_hand_7dof/build_v2_hand.py
+python3 freecad_hand_7dof/make_bearing_envelopes.py
+
+# 2. Pack into FreeCAD doc (optional — requires FreeCAD)
+python3 freecad_hand_7dof/make_fcstd.py
+
+# 3. Regenerate merged URDF
+python3 freecad_hand_7dof/assemble_full_urdf.py
 ```
+
+## Open in FreeCAD (GUI)
+
+```bash
+sudo snap install freecad
+# or: micromamba create -n cad -c conda-forge freecad && micromamba activate cad
+```
+
+Then open `freecad_hand_7dof/hand_7dof.FCStd` — all 30 parts appear as parts.
+For parametric editing, paste `hand_7dof_macro.FCMacro` into Macro → Execute.
 
 ## ROS 2 / Gazebo
 
-`urdf/fetch_7dof_with_hand.urdf` = stock arm with the 2-finger `gripper_link`
-replaced by the hand chain; `ros2_control.yaml` gains
-`hand_position_controller` (H1–H5) while H6/H7 reuse the existing
-`gripper_joint_trajectory_controller` limits (0–0.05 m).
-Point your launch's `urdf_file` at it — clock/bridge setup is unchanged.
+`urdf/fetch_7dof_with_hand.urdf` replaces the stock 2-finger gripper with the
+V2 hand. Point your launch's `urdf_file` at it — the `hand_joint_trajectory_controller`
+handles all 7 actuated joints; mimic joints auto-track via URDF `<mimic>`.
+
+```bash
+# Spawn hand controller
+ros2 run controller_manager spawner hand_joint_trajectory_controller
+# Example: close all fingers to 45°
+ros2 topic pub /hand_joint_trajectory_controller/commands std_msgs/msg/Float64MultiArray \
+  "{data: [0.785, 0.785, 0.785, 0.785, 0.785, 0.785]}" --once
+```

@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<!-- fetch_7dof_with_hand: stock Fetch 7-axis arm + 7-DOF FreeCAD hand (Option B).
-     Stock 2-finger gripper_link removed; hand mounts on wrist_roll_link.
-     NEW JOINTS: hand_yaw(H1), hand_pitch(H2), hand_roll(H3),
-     knuckle_spread_L/R(H4/H5), finger_L/R_prismatic(H6/H7, 0..0.05m).
-     Meshes: package://freecad_hand_7dof/meshes/*.stl + arm packages.
-     ros2_control in-URDF block + config/ros2_control.yaml both list H1..H7. -->
+<!-- fetch_7dof_with_hand: stock Fetch 7-axis arm + V2 5-finger anthropomorphic hand.
+     Stock gripper removed; V2 hand has 7 actuated + 7 mimic joints (14 total).
+     Actuated: thumb_CMC, thumb_MCP, index/MCP/Ring/Little_MCP.
+     Mimic: PIP (0.85×MCP), DIP (0.6×PIP) per finger.
+     Meshes: package://freecad_hand_7dof/meshes/*.stl (scale=0.001 → m).
+     ros2_control in-URDF block for 7 actuated joints. -->
 <robot name="fetch_7dof">
   <link name="base_link">
     <inertial>
@@ -364,58 +364,50 @@
       <state_interface name="position" />
       <state_interface name="velocity" />
     </joint>
-    <joint name="hand_yaw_joint">
+    <joint name="thumb_cmcmc_joint">
       <command_interface name="position">
-        <param name="min">-1.5708</param>
+        <param name="min">0.0</param>
         <param name="max">1.5708</param>
       </command_interface>
       <state_interface name="position" />
       <state_interface name="velocity" />
     </joint>
-    <joint name="hand_pitch_joint">
-      <command_interface name="position">
-        <param name="min">-1.0472</param>
-        <param name="max">1.0472</param>
-      </command_interface>
-      <state_interface name="position" />
-      <state_interface name="velocity" />
-    </joint>
-    <joint name="hand_roll_joint">
-      <command_interface name="position">
-        <param name="min">-0.6109</param>
-        <param name="max">0.6109</param>
-      </command_interface>
-      <state_interface name="position" />
-      <state_interface name="velocity" />
-    </joint>
-    <joint name="knuckle_spread_L_joint">
+    <joint name="thumb_mcp_joint">
       <command_interface name="position">
         <param name="min">0.0</param>
-        <param name="max">0.5236</param>
+        <param name="max">1.5708</param>
       </command_interface>
       <state_interface name="position" />
       <state_interface name="velocity" />
     </joint>
-    <joint name="knuckle_spread_R_joint">
+    <joint name="index_mcp_joint">
       <command_interface name="position">
         <param name="min">0.0</param>
-        <param name="max">0.5236</param>
+        <param name="max">1.5708</param>
       </command_interface>
       <state_interface name="position" />
       <state_interface name="velocity" />
     </joint>
-    <joint name="finger_L_prismatic_joint">
+    <joint name="middle_mcp_joint">
       <command_interface name="position">
         <param name="min">0.0</param>
-        <param name="max">0.05</param>
+        <param name="max">1.5708</param>
       </command_interface>
       <state_interface name="position" />
       <state_interface name="velocity" />
     </joint>
-    <joint name="finger_R_prismatic_joint">
+    <joint name="ring_mcp_joint">
       <command_interface name="position">
         <param name="min">0.0</param>
-        <param name="max">0.05</param>
+        <param name="max">1.5708</param>
+      </command_interface>
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="little_mcp_joint">
+      <command_interface name="position">
+        <param name="min">0.0</param>
+        <param name="max">1.5708</param>
       </command_interface>
       <state_interface name="position" />
       <state_interface name="velocity" />
@@ -425,432 +417,421 @@
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_adapter_link.stl" />
+        <mesh filename="package://freecad_hand_7dof/meshes/hand_adapter_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_adapter_link.stl" />
+        <mesh filename="package://freecad_hand_7dof/meshes/hand_adapter_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="0.01 0 0" />
-      <mass value="0.12" />
-      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4" />
-    </inertial>
-  </link>
-  <link name="hand_yaw_motor_link">
-    <visual>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <cylinder length="0.030" radius="0.0225" />
-      </geometry>
-      <material name="Gazebo/DarkGray" />
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <cylinder length="0.030" radius="0.0225" />
-      </geometry>
-    </collision>
-    <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.150" />
-      <inertia ixx="5.0625e-05" ixy="0" ixz="0" iyy="5.0625e-05" iyz="0" izz="3.7969e-05" />
-    </inertial>
-  </link>
-  <link name="hand_yaw_gearbox_link">
-    <visual>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <cylinder length="0.040" radius="0.025" />
-      </geometry>
-      <material name="Gazebo/Black" />
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <cylinder length="0.040" radius="0.025" />
-      </geometry>
-    </collision>
-    <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.200" />
-      <inertia ixx="1.2750e-04" ixy="0" ixz="0" iyy="1.2750e-04" iyz="0" izz="6.2500e-05" />
-    </inertial>
-  </link>
-  <link name="hand_yaw_link">
-    <visual>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_yaw_link.stl" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_yaw_link.stl" />
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.15" />
-      <origin xyz="0 0 0" />
-      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4" />
-    </inertial>
-  </link>
-  <link name="hand_pitch_link">
-    <visual>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_pitch_link.stl" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_pitch_link.stl" />
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.12" />
-      <origin xyz="0 0 0" />
-      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4" />
-    </inertial>
-  </link>
-  <link name="hand_pitch_motor_link">
-    <visual>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <cylinder length="0.030" radius="0.0225" />
-      </geometry>
-      <material name="Gazebo/DarkGray" />
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <cylinder length="0.030" radius="0.0225" />
-      </geometry>
-    </collision>
-    <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.150" />
-      <inertia ixx="5.0625e-05" ixy="0" ixz="0" iyy="5.0625e-05" iyz="0" izz="3.7969e-05" />
-    </inertial>
-  </link>
-  <link name="hand_pitch_gearbox_link">
-    <visual>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <cylinder length="0.040" radius="0.025" />
-      </geometry>
-      <material name="Gazebo/Black" />
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" />
-      <geometry>
-        <cylinder length="0.040" radius="0.025" />
-      </geometry>
-    </collision>
-    <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.200" />
-      <inertia ixx="1.2750e-04" ixy="0" ixz="0" iyy="1.2750e-04" iyz="0" izz="6.2500e-05" />
+      <origin xyz="0.04 0 0" />
+      <mass value="0.196" />
+      <inertia ixx="2.5e-5" ixy="0" ixz="0" iyy="4.5e-5" iyz="0" izz="4.0e-5" />
     </inertial>
   </link>
   <link name="hand_palm_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_palm_link.stl" />
+        <mesh filename="package://freecad_hand_7dof/meshes/hand_palm_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_palm_link.stl" />
+        <mesh filename="package://freecad_hand_7dof/meshes/hand_palm_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.25" />
-      <origin xyz="0.045 0 0" />
-      <inertia ixx="2e-4" ixy="0" ixz="0" iyy="2e-4" iyz="0" izz="2e-4" />
+      <origin xyz="0.065 0 0.009" />
+      <mass value="0.455" />
+      <inertia ixx="6.0e-5" ixy="0" ixz="0" iyy="1.2e-4" iyz="0" izz="8.0e-5" />
     </inertial>
   </link>
-  <link name="hand_roll_motor_link">
+  <link name="hand_pod_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.040" radius="0.016" />
+        <cylinder length="0.080" radius="0.028" />
       </geometry>
-      <material name="Gazebo/DarkGray" />
+      <material name="Gazebo/DarkGray">
+        <color rgba="0.3 0.3 0.3 1" />
+      </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.040" radius="0.016" />
+        <cylinder length="0.080" radius="0.028" />
       </geometry>
     </collision>
     <inertial>
       <origin xyz="0 0 0" />
-      <mass value="0.080" />
-      <inertia ixx="3.6267e-05" ixy="0" ixz="0" iyy="3.6267e-05" iyz="0" izz="1.0240e-05" />
+      <mass value="0.450" />
+      <inertia ixx="8.0e-5" ixy="0" ixz="0" iyy="8.0e-5" iyz="0" izz="4.5e-5" />
     </inertial>
   </link>
-  <link name="hand_roll_gearbox_link">
+  <link name="thumb_base_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.035" radius="0.019" />
+        <mesh filename="package://freecad_hand_7dof/meshes/thumb_base_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="Gazebo/Black" />
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.035" radius="0.019" />
+        <mesh filename="package://freecad_hand_7dof/meshes/thumb_base_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.120" />
-      <inertia ixx="6.9829e-05" ixy="0" ixz="0" iyy="6.9829e-05" iyz="0" izz="2.1660e-05" />
+      <origin xyz="0.012 0.011 0.004" />
+      <mass value="0.005" />
+      <inertia ixx="2e-7" ixy="0" ixz="0" iyy="3e-7" iyz="0" izz="2.5e-7" />
     </inertial>
   </link>
-  <link name="hand_knuckle_l_link">
+  <link name="thumb_P_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_knuckle_l_link.stl" />
+        <mesh filename="package://freecad_hand_7dof/meshes/thumb_P_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_knuckle_l_link.stl" />
+        <mesh filename="package://freecad_hand_7dof/meshes/thumb_P_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.05" />
-      <origin xyz="0 0 0" />
-      <inertia ixx="2e-5" ixy="0" ixz="0" iyy="2e-5" iyz="0" izz="2e-5" />
+      <origin xyz="0.011 0 0" />
+      <mass value="0.005" />
+      <inertia ixx="8e-7" ixy="0" ixz="0" iyy="5e-7" iyz="0" izz="4e-7" />
     </inertial>
   </link>
-  <link name="knuckle_spread_L_motor_link">
+  <link name="thumb_D_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.030" radius="0.011" />
+        <mesh filename="package://freecad_hand_7dof/meshes/thumb_D_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="Gazebo/DarkGray" />
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.030" radius="0.011" />
+        <mesh filename="package://freecad_hand_7dof/meshes/thumb_D_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.050" />
-      <inertia ixx="8.0833e-06" ixy="0" ixz="0" iyy="8.0833e-06" iyz="0" izz="3.0250e-06" />
+      <origin xyz="0.008 0 0" />
+      <mass value="0.003" />
+      <inertia ixx="3e-7" ixy="0" ixz="0" iyy="2e-7" iyz="0" izz="1.5e-7" />
     </inertial>
   </link>
-  <link name="knuckle_spread_L_gearbox_link">
+  <link name="index_K_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.025" radius="0.014" />
+        <mesh filename="package://freecad_hand_7dof/meshes/index_K_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="Gazebo/Black" />
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.025" radius="0.014" />
+        <mesh filename="package://freecad_hand_7dof/meshes/index_K_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.080" />
-      <inertia ixx="2.8833e-05" ixy="0" ixz="0" iyy="2.8833e-05" iyz="0" izz="7.8400e-06" />
+      <origin xyz="0.004 0 0" />
+      <mass value="0.002" />
+      <inertia ixx="2e-7" ixy="0" ixz="0" iyy="3e-7" iyz="0" izz="2e-7" />
     </inertial>
   </link>
-  <link name="hand_knuckle_r_link">
+  <link name="index_P_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_knuckle_r_link.stl" />
+        <mesh filename="package://freecad_hand_7dof/meshes/index_P_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <mesh filename="package://freecad_hand_7dof/meshes/hand_knuckle_r_link.stl" />
+        <mesh filename="package://freecad_hand_7dof/meshes/index_P_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.05" />
-      <origin xyz="0 0 0" />
-      <inertia ixx="2e-5" ixy="0" ixz="0" iyy="2e-5" iyz="0" izz="2e-5" />
+      <origin xyz="0.013 0 0" />
+      <mass value="0.003" />
+      <inertia ixx="4e-7" ixy="0" ixz="0" iyy="6e-7" iyz="0" izz="3e-7" />
     </inertial>
   </link>
-  <link name="knuckle_spread_R_motor_link">
+  <link name="index_M_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.030" radius="0.011" />
+        <mesh filename="package://freecad_hand_7dof/meshes/index_M_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="Gazebo/DarkGray" />
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.030" radius="0.011" />
+        <mesh filename="package://freecad_hand_7dof/meshes/index_M_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.050" />
-      <inertia ixx="8.0833e-06" ixy="0" ixz="0" iyy="8.0833e-06" iyz="0" izz="3.0250e-06" />
+      <origin xyz="0.010 0 0" />
+      <mass value="0.002" />
+      <inertia ixx="2e-7" ixy="0" ixz="0" iyy="3e-7" iyz="0" izz="1.5e-7" />
     </inertial>
   </link>
-  <link name="knuckle_spread_R_gearbox_link">
+  <link name="index_D_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.025" radius="0.014" />
+        <mesh filename="package://freecad_hand_7dof/meshes/index_D_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="Gazebo/Black" />
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.025" radius="0.014" />
+        <mesh filename="package://freecad_hand_7dof/meshes/index_D_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.080" />
-      <inertia ixx="2.8833e-05" ixy="0" ixz="0" iyy="2.8833e-05" iyz="0" izz="7.8400e-06" />
+      <origin xyz="0.008 0 0" />
+      <mass value="0.001" />
+      <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1.5e-7" iyz="0" izz="8e-8" />
     </inertial>
   </link>
-  <link name="hand_finger_l_link">
-    <visual>
-      <origin xyz="0 0.101425 0" />
-      <geometry>
-        <box size="0.03 0.02 0.08" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 0.101425 0" />
-      <geometry>
-        <box size="0.03 0.02 0.08" />
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.0798" />
-      <origin xyz="-0.01 0 0" />
-      <inertia ixx="1e-05" ixy="0" ixz="0" iyy="1e-05" iyz="0" izz="1e-05" />
-    </inertial>
-  </link>
-  <link name="finger_L_motor_link">
+  <link name="middle_K_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.030" radius="0.010" />
+        <mesh filename="package://freecad_hand_7dof/meshes/middle_K_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="Gazebo/DarkGray" />
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.030" radius="0.010" />
+        <mesh filename="package://freecad_hand_7dof/meshes/middle_K_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.040" />
-      <inertia ixx="2.1500e-05" ixy="0" ixz="0" iyy="2.1500e-05" iyz="0" izz="2.0000e-06" />
+      <origin xyz="0.004 0 0" />
+      <mass value="0.002" />
+      <inertia ixx="2e-7" ixy="0" ixz="0" iyy="3e-7" iyz="0" izz="2e-7" />
     </inertial>
   </link>
-  <link name="finger_L_gearbox_link">
+  <link name="middle_P_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.025" radius="0.014" />
+        <mesh filename="package://freecad_hand_7dof/meshes/middle_P_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="Gazebo/Black" />
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.025" radius="0.014" />
+        <mesh filename="package://freecad_hand_7dof/meshes/middle_P_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.060" />
-      <inertia ixx="2.1625e-05" ixy="0" ixz="0" iyy="2.1625e-05" iyz="0" izz="5.8800e-06" />
+      <origin xyz="0.014 0 0" />
+      <mass value="0.003" />
+      <inertia ixx="5e-7" ixy="0" ixz="0" iyy="7e-7" iyz="0" izz="3.5e-7" />
     </inertial>
   </link>
-  <link name="hand_finger_r_link">
-    <visual>
-      <origin xyz="0 -0.101425 0" />
-      <geometry>
-        <box size="0.03 0.02 0.08" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin xyz="0 -0.101425 0" />
-      <geometry>
-        <box size="0.03 0.02 0.08" />
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.0798" />
-      <origin xyz="-0.01 0 0" />
-      <inertia ixx="1e-05" ixy="0" ixz="0" iyy="1e-05" iyz="0" izz="1e-05" />
-    </inertial>
-  </link>
-  <link name="finger_R_motor_link">
+  <link name="middle_M_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.030" radius="0.010" />
+        <mesh filename="package://freecad_hand_7dof/meshes/middle_M_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="Gazebo/DarkGray" />
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.030" radius="0.010" />
+        <mesh filename="package://freecad_hand_7dof/meshes/middle_M_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
-      <origin xyz="0 0 0" />
-      <mass value="0.040" />
-      <inertia ixx="2.1500e-05" ixy="0" ixz="0" iyy="2.1500e-05" iyz="0" izz="2.0000e-06" />
+      <origin xyz="0.011 0 0" />
+      <mass value="0.002" />
+      <inertia ixx="2.5e-7" ixy="0" ixz="0" iyy="4e-7" iyz="0" izz="2e-7" />
     </inertial>
   </link>
-  <link name="finger_R_gearbox_link">
+  <link name="middle_D_link">
     <visual>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.025" radius="0.014" />
+        <mesh filename="package://freecad_hand_7dof/meshes/middle_D_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="Gazebo/Black" />
     </visual>
     <collision>
       <origin xyz="0 0 0" />
       <geometry>
-        <cylinder length="0.025" radius="0.014" />
+        <mesh filename="package://freecad_hand_7dof/meshes/middle_D_link.stl" scale="0.001 0.001 0.001" />
       </geometry>
     </collision>
     <inertial>
+      <origin xyz="0.0085 0 0" />
+      <mass value="0.001" />
+      <inertia ixx="1.2e-7" ixy="0" ixz="0" iyy="2e-7" iyz="0" izz="1e-7" />
+    </inertial>
+  </link>
+  <link name="ring_K_link">
+    <visual>
       <origin xyz="0 0 0" />
-      <mass value="0.060" />
-      <inertia ixx="2.1625e-05" ixy="0" ixz="0" iyy="2.1625e-05" iyz="0" izz="5.8800e-06" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/ring_K_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/ring_K_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.004 0 0" />
+      <mass value="0.002" />
+      <inertia ixx="2e-7" ixy="0" ixz="0" iyy="3e-7" iyz="0" izz="2e-7" />
+    </inertial>
+  </link>
+  <link name="ring_P_link">
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/ring_P_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/ring_P_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.013 0 0" />
+      <mass value="0.003" />
+      <inertia ixx="4e-7" ixy="0" ixz="0" iyy="6e-7" iyz="0" izz="3e-7" />
+    </inertial>
+  </link>
+  <link name="ring_M_link">
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/ring_M_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/ring_M_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.010 0 0" />
+      <mass value="0.002" />
+      <inertia ixx="2e-7" ixy="0" ixz="0" iyy="3e-7" iyz="0" izz="1.5e-7" />
+    </inertial>
+  </link>
+  <link name="ring_D_link">
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/ring_D_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/ring_D_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.0075 0 0" />
+      <mass value="0.001" />
+      <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1.5e-7" iyz="0" izz="8e-8" />
+    </inertial>
+  </link>
+  <link name="little_K_link">
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/little_K_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/little_K_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.004 0 0" />
+      <mass value="0.002" />
+      <inertia ixx="2e-7" ixy="0" ixz="0" iyy="3e-7" iyz="0" izz="2e-7" />
+    </inertial>
+  </link>
+  <link name="little_P_link">
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/little_P_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/little_P_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.011 0 0" />
+      <mass value="0.003" />
+      <inertia ixx="4e-7" ixy="0" ixz="0" iyy="5e-7" iyz="0" izz="3e-7" />
+    </inertial>
+  </link>
+  <link name="little_M_link">
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/little_M_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/little_M_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.008 0 0" />
+      <mass value="0.002" />
+      <inertia ixx="2e-7" ixy="0" ixz="0" iyy="3e-7" iyz="0" izz="1.5e-7" />
+    </inertial>
+  </link>
+  <link name="little_D_link">
+    <visual>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/little_D_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://freecad_hand_7dof/meshes/little_D_link.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.0065 0 0" />
+      <mass value="0.001" />
+      <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1.5e-7" iyz="0" izz="8e-8" />
     </inertial>
   </link>
   <joint name="hand_mount_fixed" type="fixed">
@@ -858,233 +839,366 @@
     <parent link="wrist_roll_link" />
     <child link="hand_adapter_link" />
   </joint>
-  <joint name="hand_yaw_motor_fixed" type="fixed">
-    <origin xyz="0.03 0 0" />
+  <joint name="palm_fixed" type="fixed">
+    <origin xyz="0.065 0 0" />
     <parent link="hand_adapter_link" />
-    <child link="hand_yaw_motor_link" />
-  </joint>
-  <joint name="hand_yaw_gearbox_fixed" type="fixed">
-    <origin xyz="0 0 0" />
-    <parent link="hand_yaw_motor_link" />
-    <child link="hand_yaw_gearbox_link" />
-  </joint>
-  <joint name="hand_yaw_joint" type="revolute">
-    <origin xyz="0 0 0" />
-    <parent link="hand_yaw_gearbox_link" />
-    <child link="hand_yaw_link" />
-    <axis xyz="0 0 1" />
-    <limit effort="10" lower="-1.5708" upper="1.5708" velocity="2.0" />
-    <transmission>
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="hand_yaw_joint">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="hand_yaw_motor">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-        <mechanicalReduction>10.0</mechanicalReduction>
-      </actuator>
-    </transmission>
-  </joint>
-  <joint name="hand_pitch_motor_fixed" type="fixed">
-    <origin xyz="0.025 0 0" />
-    <parent link="hand_yaw_link" />
-    <child link="hand_pitch_motor_link" />
-  </joint>
-  <joint name="hand_pitch_gearbox_fixed" type="fixed">
-    <origin xyz="0 0 0" />
-    <parent link="hand_pitch_motor_link" />
-    <child link="hand_pitch_gearbox_link" />
-  </joint>
-  <joint name="hand_pitch_joint" type="revolute">
-    <origin xyz="0 0 0" />
-    <parent link="hand_pitch_gearbox_link" />
-    <child link="hand_pitch_link" />
-    <axis xyz="0 1 0" />
-    <limit effort="10" lower="-1.0472" upper="1.0472" velocity="2.0" />
-    <transmission>
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="hand_pitch_joint">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="hand_pitch_motor">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-        <mechanicalReduction>10.0</mechanicalReduction>
-      </actuator>
-    </transmission>
-  </joint>
-  <joint name="hand_roll_motor_fixed" type="fixed">
-    <origin xyz="0.025 0 0" />
-    <parent link="hand_pitch_link" />
-    <child link="hand_roll_motor_link" />
-  </joint>
-  <joint name="hand_roll_gearbox_fixed" type="fixed">
-    <origin xyz="0 0 0" />
-    <parent link="hand_roll_motor_link" />
-    <child link="hand_roll_gearbox_link" />
-  </joint>
-  <joint name="hand_roll_joint" type="revolute">
-    <origin xyz="0 0 0" />
-    <parent link="hand_roll_gearbox_link" />
     <child link="hand_palm_link" />
-    <axis xyz="1 0 0" />
-    <limit effort="8" lower="-0.6109" upper="0.6109" velocity="2.5" />
-    <transmission>
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="hand_roll_joint">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="hand_roll_motor">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-        <mechanicalReduction>8.0</mechanicalReduction>
-      </actuator>
-    </transmission>
   </joint>
-  <joint name="knuckle_spread_L_motor_fixed" type="fixed">
-    <origin xyz="0.105 -0.03 0" />
+  <joint name="pod_fixed" type="fixed">
+    <origin xyz="-0.055 0 0" rpy="0 0 0" />
+    <parent link="hand_adapter_link" />
+    <child link="hand_pod_link" />
+  </joint>
+  <joint name="thumb_base_fixed" type="fixed">
+    <origin xyz="0.115 -0.032 0.018" rpy="0 0 0.3" />
     <parent link="hand_palm_link" />
-    <child link="knuckle_spread_L_motor_link" />
+    <child link="thumb_base_link" />
   </joint>
-  <joint name="knuckle_spread_L_gearbox_fixed" type="fixed">
-    <origin xyz="0 0 0" />
-    <parent link="knuckle_spread_L_motor_link" />
-    <child link="knuckle_spread_L_gearbox_link" />
-  </joint>
-  <joint name="knuckle_spread_L_joint" type="revolute">
-    <origin xyz="0 0 0" />
-    <parent link="knuckle_spread_L_gearbox_link" />
-    <child link="hand_knuckle_l_link" />
+  <joint name="thumb_cmcmc_joint" type="revolute">
+    <origin xyz="0.012 0.011 0.008" rpy="0 0 0" />
+    <parent link="thumb_base_link" />
+    <child link="thumb_P_link" />
     <axis xyz="0 0 1" />
-    <limit effort="3" lower="0" upper="0.5236" velocity="3.0" />
+    <limit lower="-0.7854" upper="0.7854" effort="5.0" velocity="2.0" />
+    <dynamics damping="0.05" friction="0.02" />
     <transmission>
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="knuckle_spread_L_joint">
+      <joint name="thumb_cmcmc_joint">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       </joint>
-      <actuator name="knuckle_spread_L_motor">
+      <actuator name="thumb_cmcmc_motor">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-        <mechanicalReduction>6.0</mechanicalReduction>
+        <mechanicalReduction>10.0</mechanicalReduction>
       </actuator>
     </transmission>
   </joint>
-  <joint name="knuckle_spread_R_motor_fixed" type="fixed">
-    <origin xyz="0.105 0.03 0" />
-    <parent link="hand_palm_link" />
-    <child link="knuckle_spread_R_motor_link" />
-  </joint>
-  <joint name="knuckle_spread_R_gearbox_fixed" type="fixed">
-    <origin xyz="0 0 0" />
-    <parent link="knuckle_spread_R_motor_link" />
-    <child link="knuckle_spread_R_gearbox_link" />
-  </joint>
-  <joint name="knuckle_spread_R_joint" type="revolute">
-    <origin xyz="0 0 0" />
-    <parent link="knuckle_spread_R_gearbox_link" />
-    <child link="hand_knuckle_r_link" />
-    <axis xyz="0 0 -1" />
-    <limit effort="3" lower="0" upper="0.5236" velocity="3.0" />
-    <transmission>
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="knuckle_spread_R_joint">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="knuckle_spread_R_motor">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-        <mechanicalReduction>6.0</mechanicalReduction>
-      </actuator>
-    </transmission>
-  </joint>
-  <joint name="finger_L_motor_fixed" type="fixed">
-    <origin xyz="0.012 -0.005 0.015" />
-    <parent link="hand_knuckle_l_link" />
-    <child link="finger_L_motor_link" />
-  </joint>
-  <joint name="finger_L_gearbox_fixed" type="fixed">
-    <origin xyz="0 0 0" />
-    <parent link="finger_L_motor_link" />
-    <child link="finger_L_gearbox_link" />
-  </joint>
-  <joint name="finger_L_prismatic_joint" type="prismatic">
-    <origin xyz="0 0 0" />
-    <parent link="finger_L_gearbox_link" />
-    <child link="hand_finger_l_link" />
-    <axis xyz="0 -1 0" />
-    <limit effort="60" lower="0.0" upper="0.05" velocity="0.05" />
-    <transmission>
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="finger_L_prismatic_joint">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="finger_L_motor">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-        <mechanicalReduction>12.0</mechanicalReduction>
-      </actuator>
-    </transmission>
-  </joint>
-  <joint name="finger_R_motor_fixed" type="fixed">
-    <origin xyz="0.012 0.005 0.015" />
-    <parent link="hand_knuckle_r_link" />
-    <child link="finger_R_motor_link" />
-  </joint>
-  <joint name="finger_R_gearbox_fixed" type="fixed">
-    <origin xyz="0 0 0" />
-    <parent link="finger_R_motor_link" />
-    <child link="finger_R_gearbox_link" />
-  </joint>
-  <joint name="finger_R_prismatic_joint" type="prismatic">
-    <origin xyz="0 0 0" />
-    <parent link="finger_R_gearbox_link" />
-    <child link="hand_finger_r_link" />
+  <joint name="thumb_mcp_joint" type="revolute">
+    <origin xyz="0.022 0 0" rpy="0 0 0" />
+    <parent link="thumb_P_link" />
+    <child link="thumb_D_link" />
     <axis xyz="0 1 0" />
-    <limit effort="60" lower="0.0" upper="0.05" velocity="0.05" />
+    <limit lower="0.0" upper="1.5708" effort="3.0" velocity="2.0" />
+    <dynamics damping="0.03" friction="0.01" />
     <transmission>
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="finger_R_prismatic_joint">
+      <joint name="thumb_mcp_joint">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       </joint>
-      <actuator name="finger_R_motor">
+      <actuator name="thumb_mcp_motor">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-        <mechanicalReduction>12.0</mechanicalReduction>
+        <mechanicalReduction>10.0</mechanicalReduction>
       </actuator>
     </transmission>
+  </joint>
+
+  
+  
+  
+  
+  
+
+    index:  {P:(26,10,8,5.5),  M:(20,8,7,4.5,5.5),  D:(16,7,6)},
+    middle:{P:(28,10,8,5.5),  M:(22,8,7,4.5,5.5),  D:(17,7,6)},
+    ring:  {P:(26,9,7,5.0),   M:(20,7,6,4.0,5.0),  D:(15,6,5)},
+    little:{P:(22,8,6,4.5),   M:(16,6,5,3.5,4.5),  D:(13,5,4)}
+  "/&gt;
+
+  
+  
+  <joint name="index_knuckle_fixed" type="fixed">
+    <origin xyz="0.120 -0.015 0.027" />
+    <parent link="hand_palm_link" />
+    <child link="index_K_link" />
+  </joint>
+  <joint name="index_mcp_joint" type="revolute">
+    <origin xyz="0 0 0" />
+    <parent link="index_K_link" />
+    <child link="index_P_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="1.5708" effort="2.5" velocity="2.0" />
+    <dynamics damping="0.03" friction="0.01" />
+    <transmission>
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="index_mcp_joint">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="index_mcp_motor">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <mechanicalReduction>10.0</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </joint>
+  <joint name="index_pic_joint" type="revolute">
+    <origin xyz="0.026 0 0" />
+    <parent link="index_P_link" />
+    <child link="index_M_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="1.309" effort="1.5" velocity="2.0" />
+    <dynamics damping="0.02" friction="0.01" />
+    <mimic joint="index_mcp_joint" multiplier="0.85" offset="0.0" />
+  </joint>
+  <joint name="index_dip_joint" type="revolute">
+    <origin xyz="0.020 0 0" />
+    <parent link="index_M_link" />
+    <child link="index_D_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="0.959" effort="1.0" velocity="2.0" />
+    <dynamics damping="0.02" friction="0.01" />
+    <mimic joint="index_pic_joint" multiplier="0.6" offset="0.0" />
+  </joint>
+  <joint name="middle_knuckle_fixed" type="fixed">
+    <origin xyz="0.120 0.000 0.027" />
+    <parent link="hand_palm_link" />
+    <child link="middle_K_link" />
+  </joint>
+  <joint name="middle_mcp_joint" type="revolute">
+    <origin xyz="0 0 0" />
+    <parent link="middle_K_link" />
+    <child link="middle_P_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="1.5708" effort="2.5" velocity="2.0" />
+    <dynamics damping="0.03" friction="0.01" />
+    <transmission>
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="middle_mcp_joint">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="middle_mcp_motor">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <mechanicalReduction>10.0</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </joint>
+  <joint name="middle_pic_joint" type="revolute">
+    <origin xyz="0.028 0 0" />
+    <parent link="middle_P_link" />
+    <child link="middle_M_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="1.309" effort="1.5" velocity="2.0" />
+    <dynamics damping="0.02" friction="0.01" />
+    <mimic joint="middle_mcp_joint" multiplier="0.85" offset="0.0" />
+  </joint>
+  <joint name="middle_dip_joint" type="revolute">
+    <origin xyz="0.022 0 0" />
+    <parent link="middle_M_link" />
+    <child link="middle_D_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="0.959" effort="1.0" velocity="2.0" />
+    <dynamics damping="0.02" friction="0.01" />
+    <mimic joint="middle_pic_joint" multiplier="0.6" offset="0.0" />
+  </joint>
+  <joint name="ring_knuckle_fixed" type="fixed">
+    <origin xyz="0.120 0.015 0.027" />
+    <parent link="hand_palm_link" />
+    <child link="ring_K_link" />
+  </joint>
+  <joint name="ring_mcp_joint" type="revolute">
+    <origin xyz="0 0 0" />
+    <parent link="ring_K_link" />
+    <child link="ring_P_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="1.5708" effort="2.5" velocity="2.0" />
+    <dynamics damping="0.03" friction="0.01" />
+    <transmission>
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="ring_mcp_joint">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="ring_mcp_motor">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <mechanicalReduction>10.0</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </joint>
+  <joint name="ring_pic_joint" type="revolute">
+    <origin xyz="0.026 0 0" />
+    <parent link="ring_P_link" />
+    <child link="ring_M_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="1.309" effort="1.5" velocity="2.0" />
+    <dynamics damping="0.02" friction="0.01" />
+    <mimic joint="ring_mcp_joint" multiplier="0.85" offset="0.0" />
+  </joint>
+  <joint name="ring_dip_joint" type="revolute">
+    <origin xyz="0.020 0 0" />
+    <parent link="ring_M_link" />
+    <child link="ring_D_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="0.959" effort="1.0" velocity="2.0" />
+    <dynamics damping="0.02" friction="0.01" />
+    <mimic joint="ring_pic_joint" multiplier="0.6" offset="0.0" />
+  </joint>
+  <joint name="little_knuckle_fixed" type="fixed">
+    <origin xyz="0.120 0.030 0.027" />
+    <parent link="hand_palm_link" />
+    <child link="little_K_link" />
+  </joint>
+  <joint name="little_mcp_joint" type="revolute">
+    <origin xyz="0 0 0" />
+    <parent link="little_K_link" />
+    <child link="little_P_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="1.5708" effort="2.5" velocity="2.0" />
+    <dynamics damping="0.03" friction="0.01" />
+    <transmission>
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="little_mcp_joint">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="little_mcp_motor">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <mechanicalReduction>10.0</mechanicalReduction>
+      </actuator>
+    </transmission>
+  </joint>
+  <joint name="little_pic_joint" type="revolute">
+    <origin xyz="0.022 0 0" />
+    <parent link="little_P_link" />
+    <child link="little_M_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="1.309" effort="1.5" velocity="2.0" />
+    <dynamics damping="0.02" friction="0.01" />
+    <mimic joint="little_mcp_joint" multiplier="0.85" offset="0.0" />
+  </joint>
+  <joint name="little_dip_joint" type="revolute">
+    <origin xyz="0.016 0 0" />
+    <parent link="little_M_link" />
+    <child link="little_D_link" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="0.959" effort="1.0" velocity="2.0" />
+    <dynamics damping="0.02" friction="0.01" />
+    <mimic joint="little_pic_joint" multiplier="0.6" offset="0.0" />
   </joint>
   <gazebo reference="hand_adapter_link">
     <mu1>1.0</mu1>
     <mu2>1.0</mu2>
     <material>Gazebo/DarkGray</material>
-  </gazebo>
-  <gazebo reference="hand_yaw_link">
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
-    <material>Gazebo/White</material>
-  </gazebo>
-  <gazebo reference="hand_pitch_link">
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
-    <material>Gazebo/White</material>
+    <selfCollide>false</selfCollide>
   </gazebo>
   <gazebo reference="hand_palm_link">
     <mu1>1.0</mu1>
     <mu2>1.0</mu2>
     <material>Gazebo/White</material>
+    <selfCollide>false</selfCollide>
   </gazebo>
-  <gazebo reference="hand_knuckle_l_link">
+  <gazebo reference="hand_pod_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/Black</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="thumb_base_link">
     <mu1>1.0</mu1>
     <mu2>1.0</mu2>
     <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
   </gazebo>
-  <gazebo reference="hand_knuckle_r_link">
+  <gazebo reference="thumb_P_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/White</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="thumb_D_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/White</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="index_K_link">
     <mu1>1.0</mu1>
     <mu2>1.0</mu2>
     <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
   </gazebo>
-  <gazebo reference="hand_finger_l_link">
+  <gazebo reference="index_P_link">
     <mu1>1.0</mu1>
     <mu2>1.0</mu2>
     <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
   </gazebo>
-  <gazebo reference="hand_finger_r_link">
+  <gazebo reference="index_M_link">
     <mu1>1.0</mu1>
     <mu2>1.0</mu2>
     <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="index_D_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="middle_K_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="middle_P_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="middle_M_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="middle_D_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="ring_K_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="ring_P_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="ring_M_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="ring_D_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="little_K_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="little_P_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="little_M_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="little_D_link">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <material>Gazebo/DarkGray</material>
+    <selfCollide>false</selfCollide>
   </gazebo>
 </robot>
