@@ -23,23 +23,23 @@
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.135"/>
-      <inertia ixx="0.000042" ixy="0" ixz="0" iyy="0.000042" iyz="0" izz="0.000027"/>
+      <inertia ixx="4.2e-5" ixy="0" ixz="0" iyy="4.2e-5" iyz="0" izz="2.7e-5"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </collision>
   </link>
-  <joint name="joint_0" type="revolute">
-    <origin xyz="0.000 0.000 50.000" rpy="0 0 0"/>
+  <joint name="joint_J1" type="revolute">
+    <origin xyz="0 0 0.045" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="link_0"/>
     <axis xyz="0 0 1"/>
@@ -51,7 +51,7 @@
     </limit>
     <transmission>
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="joint_0">
+      <joint name="joint_J1">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       </joint>
       <actuator>
@@ -64,23 +64,23 @@
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.135"/>
-      <inertia ixx="0.000042" ixy="0" ixz="0" iyy="0.000042" iyz="0" izz="0.000027"/>
+      <inertia ixx="4.2e-5" ixy="0" ixz="0" iyy="4.2e-5" iyz="0" izz="2.7e-5"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </collision>
   </link>
-  <joint name="joint_1" type="revolute">
-    <origin xyz="0.000 0.000 45.000" rpy="0 0 0"/>
+  <joint name="joint_J2" type="revolute">
+    <origin xyz="0 0 0.045" rpy="0 0 0"/>
     <parent link="link_0"/>
     <child link="link_1"/>
     <axis xyz="0 1 0"/>
@@ -92,7 +92,7 @@
     </limit>
     <transmission>
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="joint_1">
+      <joint name="joint_J2">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       </joint>
       <actuator>
@@ -105,23 +105,23 @@
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.135"/>
-      <inertia ixx="0.000042" ixy="0" ixz="0" iyy="0.000042" iyz="0" izz="0.000027"/>
+      <inertia ixx="4.2e-5" ixy="0" ixz="0" iyy="4.2e-5" iyz="0" izz="2.7e-5"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </collision>
   </link>
-  <joint name="joint_2" type="revolute">
-    <origin xyz="0.000 0.000 75.000" rpy="0 0 0"/>
+  <joint name="joint_J3" type="revolute">
+    <origin xyz="0 0 0.045" rpy="0 0 0"/>
     <parent link="link_1"/>
     <child link="link_2"/>
     <axis xyz="0 0 1"/>
@@ -133,7 +133,7 @@
     </limit>
     <transmission>
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="joint_2">
+      <joint name="joint_J3">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       </joint>
       <actuator>
@@ -146,23 +146,23 @@
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.135"/>
-      <inertia ixx="0.000042" ixy="0" ixz="0" iyy="0.000042" iyz="0" izz="0.000027"/>
+      <inertia ixx="4.2e-5" ixy="0" ixz="0" iyy="4.2e-5" iyz="0" izz="2.7e-5"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </collision>
   </link>
-  <joint name="joint_3" type="revolute">
-    <origin xyz="0.000 0.000 75.000" rpy="0 0 0"/>
+  <joint name="joint_J4" type="revolute">
+    <origin xyz="0 0 0.045" rpy="0 0 0"/>
     <parent link="link_2"/>
     <child link="link_3"/>
     <axis xyz="0 1 0"/>
@@ -174,7 +174,7 @@
     </limit>
     <transmission>
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="joint_3">
+      <joint name="joint_J4">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       </joint>
       <actuator>
@@ -187,23 +187,23 @@
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.135"/>
-      <inertia ixx="0.000042" ixy="0" ixz="0" iyy="0.000042" iyz="0" izz="0.000027"/>
+      <inertia ixx="4.2e-5" ixy="0" ixz="0" iyy="4.2e-5" iyz="0" izz="2.7e-5"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </collision>
   </link>
-  <joint name="joint_4" type="revolute">
-    <origin xyz="0.000 0.000 65.000" rpy="0 0 0"/>
+  <joint name="joint_J5" type="revolute">
+    <origin xyz="0 0 0.045" rpy="0 0 0"/>
     <parent link="link_3"/>
     <child link="link_4"/>
     <axis xyz="0 0 1"/>
@@ -215,7 +215,7 @@
     </limit>
     <transmission>
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="joint_4">
+      <joint name="joint_J5">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       </joint>
       <actuator>
@@ -228,23 +228,23 @@
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.135"/>
-      <inertia ixx="0.000042" ixy="0" ixz="0" iyy="0.000042" iyz="0" izz="0.000027"/>
+      <inertia ixx="4.2e-5" ixy="0" ixz="0" iyy="4.2e-5" iyz="0" izz="2.7e-5"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </collision>
   </link>
-  <joint name="joint_5" type="revolute">
-    <origin xyz="0.000 0.000 65.000" rpy="0 0 0"/>
+  <joint name="joint_J6" type="revolute">
+    <origin xyz="0 0 0.045" rpy="0 0 0"/>
     <parent link="link_4"/>
     <child link="link_5"/>
     <axis xyz="0 1 0"/>
@@ -256,7 +256,7 @@
     </limit>
     <transmission>
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="joint_5">
+      <joint name="joint_J6">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       </joint>
       <actuator>
@@ -269,23 +269,23 @@
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.135"/>
-      <inertia ixx="0.000042" ixy="0" ixz="0" iyy="0.000042" iyz="0" izz="0.000027"/>
+      <inertia ixx="4.2e-5" ixy="0" ixz="0" iyy="4.2e-5" iyz="0" izz="2.7e-5"/>
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.02" length="0.05"/>
+        <cylinder radius="0.02" length="0.045"/>
       </geometry>
     </collision>
   </link>
-  <joint name="joint_6" type="revolute">
-    <origin xyz="0.000 0.000 45.000" rpy="0 0 0"/>
+  <joint name="joint_J7" type="revolute">
+    <origin xyz="0 0 0.045" rpy="0 0 0"/>
     <parent link="link_5"/>
     <child link="link_6"/>
     <axis xyz="0 0 1"/>
@@ -297,7 +297,7 @@
     </limit>
     <transmission>
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="joint_6">
+      <joint name="joint_J7">
         <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       </joint>
       <actuator>
@@ -325,8 +325,8 @@
       </geometry>
     </collision>
   </link>
-  <joint name="joint_7" type="fixed">
-    <origin xyz="0 0 0.045" rpy="0 0 0"/>
+  <joint name="joint_end" type="fixed">
+    <origin xyz="0 0 0.02" rpy="0 0 0"/>
     <parent link="link_6"/>
     <child link="end_effector"/>
   </joint>
