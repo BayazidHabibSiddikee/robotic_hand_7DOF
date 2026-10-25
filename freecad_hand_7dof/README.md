@@ -71,8 +71,8 @@ freecad_hand_7dof/
 python3 freecad_hand_7dof/build_v2_hand.py
 python3 freecad_hand_7dof/make_bearing_envelopes.py
 
-# 2. Pack into FreeCAD doc (optional — requires FreeCAD)
-python3 freecad_hand_7dof/make_fcstd.py
+# 2. Regenerate FCStd (requires FreeCAD installed)
+freecad --console --macro freecad_hand_7dof/make_fcstd.py
 
 # 3. Regenerate merged URDF
 python3 freecad_hand_7dof/assemble_full_urdf.py
